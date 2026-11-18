@@ -7,7 +7,8 @@
     "dev": "react-router dev",
     "start": "react-router-serve ./build/server/index.js",
     "typecheck": "react-router typegen && tsc",
-    "seed:popular-searches": "node --env-file=.env.local scripts/seed-popular-searches.mjs"
+    "seed:popular-searches": "node --env-file=.env.local scripts/seed-popular-searches.mjs",
+    "seed:products": "node --env-file=.env.local scripts/seed-products.mjs"
   },
   "dependencies": {
     "@react-router/node": "^8.5.1",
