@@ -26,7 +26,6 @@ export function parseProduct(id: string, value: unknown): Product {
     genres,
     country,
     productKey,
-    isDemo,
     isRecommended,
     recommendedOrder,
     isPopular,
@@ -52,7 +51,6 @@ export function parseProduct(id: string, value: unknown): Product {
     !isValueFrom(country, PRODUCT_COUNTRIES) ||
     currency !== "EUR" ||
     typeof productKey !== "string" ||
-    isDemo !== true ||
     typeof isRecommended !== "boolean" ||
     !isOptionalOrder(recommendedOrder) ||
     typeof isPopular !== "boolean" ||
@@ -75,7 +73,6 @@ export function parseProduct(id: string, value: unknown): Product {
     genres,
     country,
     productKey,
-    isDemo,
     isRecommended,
     ...(recommendedOrder === undefined ? {} : { recommendedOrder }),
     isPopular,

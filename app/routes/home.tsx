@@ -2,8 +2,23 @@ import type { Route } from "./+types/home";
 import { Header } from "../components/layout/header";
 import { HomeBannerRow } from "../components/layout/home-banner-row";
 import { ProductSection } from "~/components/layout/product-section";
-import { getRecommendedProducts } from "~/lib/products/recommended-products.client";
-import { getPopularProducts } from "~/lib/products/popular-products.client";
+import { getProducts } from "~/lib/products/product-repository.client";
+
+function loadRecommendedProducts() {
+  return getProducts({
+    filters: { isRecommended: true },
+    sortBy: "recommendedOrder",
+    limit: 5,
+  });
+}
+
+function loadPopularProducts() {
+  return getProducts({
+    filters: { isPopular: true },
+    sortBy: "popularOrder",
+    limit: 15,
+  });
+}
 
 export function meta({}: Route.MetaArgs) {
   return [
@@ -21,14 +36,14 @@ export default function Home() {
         <ProductSection
           title="Rekomenduojama tau"
           errorMessage="Nepavyko įkelti rekomenduojamų produktų."
-          loadProducts={getRecommendedProducts}
+          loadProducts={loadRecommendedProducts}
           loadingMessage="Įkeliami rekomenduojami produktai..."
           variant="primary"
         />
         <ProductSection
           title="Populiariausi žaidimai"
           errorMessage="Nepavyko įkelti populiariausių žaidimų."
-          loadProducts={getPopularProducts}
+          loadProducts={loadPopularProducts}
           loadingMessage="Įkeliami populiariausi žaidimai..."
           variant="secondary"
         />

@@ -18,16 +18,29 @@ export const PRODUCT_TYPES = [
 export type ProductType = (typeof PRODUCT_TYPES)[number];
 
 export const PRODUCT_PLATFORMS = [
+  "Airbnb",
+  "Amazon",
+  "Apple App Store",
+  "Binance",
+  "Bitnovo",
+  "Discord",
   "Steam",
   "Xbox Live",
   "Razer",
   "EA App",
+  "IKEA",
+  "Microsoft Store",
+  "Netflix",
   "PlayStation Network",
   "Nintendo eShop",
   "Epic Games",
   "Ubisoft Connect",
   "Google Play",
-  "Apple App Store",
+  "Spotify",
+  "Tinder",
+  "Uber",
+  "Uber Eats",
+  "Zalando",
 ] as const;
 export type ProductPlatform = (typeof PRODUCT_PLATFORMS)[number];
 
@@ -81,7 +94,6 @@ export interface Product {
   genres: ProductGenre[];
   country: ProductCountry;
   productKey: string;
-  isDemo: true;
   isRecommended: boolean;
   recommendedOrder?: number;
   isPopular: boolean;
