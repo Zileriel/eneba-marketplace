@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { Info } from "lucide-react";
 import { ProductCard } from "./product-card";
-import { getRecommendedProducts } from "../lib/recommended-products.client";
-import type { Product } from "../lib/products";
+import { getRecommendedProducts } from "../lib/products/recommended-products.client";
+import type { Product } from "../lib/products/products";
 
 export function RecommendedProducts() {
   const [products, setProducts] = useState<Product[] | null>(null);
@@ -30,7 +30,10 @@ export function RecommendedProducts() {
       aria-labelledby="recommended-products-title"
       className="recommended-products"
     >
-      <h2 className="recommended-products__title" id="recommended-products-title">
+      <h2
+        className="recommended-products__title"
+        id="recommended-products-title"
+      >
         Rekomenduojama tau
         <Info aria-hidden="true" />
       </h2>

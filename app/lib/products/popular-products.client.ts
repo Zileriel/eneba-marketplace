@@ -1,11 +1,5 @@
-import {
-  collection,
-  getDocs,
-  limit,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "./firebase";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import type { Product } from "./products";
 import { parseProduct } from "./products.client";
 
@@ -58,9 +52,7 @@ async function loadPopularProducts(): Promise<Product[]> {
   );
 
   if (
-    orderedProducts.some(
-      (product, index) => product.popularOrder !== index + 1,
-    )
+    orderedProducts.some((product, index) => product.popularOrder !== index + 1)
   ) {
     throw new Error("Popular products must have unique ordered ranks.");
   }

@@ -4,7 +4,7 @@ import { AuthShell } from "../components/auth-shell";
 import {
   getAuthErrorMessage,
   sendPasswordReset,
-} from "../lib/auth.client";
+} from "../lib/auth/auth.client";
 import type { Route } from "./+types/lost-password";
 
 export function meta({}: Route.MetaArgs) {
@@ -64,8 +64,8 @@ export default function LostPassword() {
           )}
           {isSent && (
             <p className="auth-form__success" role="status">
-              Jei paskyra susieta su šiuo el. paštu, netrukus gausite slaptažodžio
-              nustatymo nuorodą.
+              Jei paskyra susieta su šiuo el. paštu, netrukus gausite
+              slaptažodžio nustatymo nuorodą.
             </p>
           )}
           <button

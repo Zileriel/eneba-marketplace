@@ -5,7 +5,7 @@ import {
   signInWithEmailAndPassword,
   type User,
 } from "firebase/auth";
-import { auth } from "./firebase";
+import { auth } from "../firebase/firebase";
 
 export function subscribeToAuthChanges(
   onUser: (user: User | null) => void,

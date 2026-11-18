@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { ProductCard } from "./product-card";
-import { getPopularProducts } from "../lib/popular-products.client";
-import type { Product } from "../lib/products";
+import { getPopularProducts } from "../lib/products/popular-products.client";
+import type { Product } from "../lib/products/products";
 
 const SLIDE_COUNT = 3;
 const PRODUCTS_PER_SLIDE = 5;
@@ -84,20 +84,14 @@ export function PopularGames() {
       setCurrentSlide(
         Math.max(
           0,
-          Math.min(
-            SLIDE_COUNT - 1,
-            Math.round(viewport.scrollLeft / step),
-          ),
+          Math.min(SLIDE_COUNT - 1, Math.round(viewport.scrollLeft / step)),
         ),
       );
     }, 120);
   }
 
   return (
-    <section
-      aria-labelledby="popular-games-title"
-      className="popular-products"
-    >
+    <section aria-labelledby="popular-games-title" className="popular-products">
       <div className="popular-products__inner">
         <h2 className="popular-products__title" id="popular-games-title">
           Populiariausi žaidimai
@@ -138,11 +132,7 @@ export function PopularGames() {
               >
                 <div className="popular-products__track" ref={trackRef}>
                   {products.map((product) => (
-                    <ProductCard
-                      carousel
-                      key={product.id}
-                      product={product}
-                    />
+                    <ProductCard carousel key={product.id} product={product} />
                   ))}
                 </div>
               </div>

@@ -5,7 +5,7 @@ import { PasswordField } from "../components/password-field";
 import {
   getAuthErrorMessage,
   registerWithEmail,
-} from "../lib/auth.client";
+} from "../lib/auth/auth.client";
 import type { Route } from "./+types/register";
 
 export function meta({}: Route.MetaArgs) {

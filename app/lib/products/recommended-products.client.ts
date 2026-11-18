@@ -1,11 +1,5 @@
-import {
-  collection,
-  getDocs,
-  limit,
-  query,
-  where,
-} from "firebase/firestore";
-import { db } from "./firebase";
+import { collection, getDocs, limit, query, where } from "firebase/firestore";
+import { db } from "../firebase/firebase";
 import type { Product } from "./products";
 import { parseProduct } from "./products.client";
 
@@ -53,7 +47,7 @@ async function loadRecommendedProducts(): Promise<Product[]> {
   }
 
   return products.sort(
-      (left, right) =>
-        (left.recommendedOrder ?? 0) - (right.recommendedOrder ?? 0),
+    (left, right) =>
+      (left.recommendedOrder ?? 0) - (right.recommendedOrder ?? 0),
   );
 }

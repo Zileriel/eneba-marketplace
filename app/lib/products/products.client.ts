@@ -106,7 +106,6 @@ function isValuesFrom<const Values extends readonly string[]>(
   values: Values,
 ): value is Values[number][] {
   return (
-    Array.isArray(value) &&
-    value.every((entry) => isValueFrom(entry, values))
+    Array.isArray(value) && value.every((entry) => isValueFrom(entry, values))
   );
 }
