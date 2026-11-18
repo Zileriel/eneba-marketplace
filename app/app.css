@@ -1,12 +1,16 @@
 @import "tailwindcss";
+@import "@typehaus/metropolis";
+
+:root {
+  font-family: "Metropolis", sans-serif;
+}
 
 @theme {
-  --font-sans:
-    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --color-background: #4618ac;
+  --color-foreground: #fff;
 }
 
 html,
 body {
-  @apply bg-white;
+  @apply bg-background;
 }
