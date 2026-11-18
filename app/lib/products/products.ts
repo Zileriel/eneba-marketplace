@@ -99,3 +99,5 @@ export interface Product {
   isPopular: boolean;
   popularOrder?: number;
 }
+
+export type ProductCatalogItem = Omit<Product, "productKey">;

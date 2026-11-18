@@ -1,5 +1,7 @@
 import { CirclePlus, Gamepad2, Info, ShoppingCart } from "lucide-react";
-import type { Product } from "../../lib/products/products";
+import { Link } from "react-router";
+import { useCart } from "../../lib/cart/cart-context";
+import type { ProductCatalogItem } from "../../lib/products/products";
 
 const formatEuro = new Intl.NumberFormat("lt-LT", {
   style: "currency",
@@ -10,9 +12,10 @@ export function ProductCard({
   product,
   carousel = false,
 }: {
-  product: Product;
+  product: ProductCatalogItem;
   carousel?: boolean;
 }) {
+  const { addToCart } = useCart();
   const moneyBack = (product.price * product.moneyBackPercent) / 100;
   const region = product.regions[0];
   const regionStyle =
@@ -25,7 +28,13 @@ export function ProductCard({
       className={`product-card${carousel ? " product-card--carousel" : ""}`}
     >
       <div className="product-card__cover">
-        <img alt={product.name} src={product.coverImage} />
+        <Link
+          aria-label={`Peržiūrėti produktą: ${product.name}`}
+          className="product-card__cover-link"
+          to={`/products/${encodeURIComponent(product.id)}`}
+        >
+          <img alt={product.name} src={product.coverImage} />
+        </Link>
         <span className="product-card__cashback-badge">
           <CirclePlus aria-hidden="true" />
           <span>GRĮŽTA</span>
@@ -36,7 +45,10 @@ export function ProductCard({
         </div>
       </div>
       <div className="product-card__body">
-        <div className="product-card__details">
+        <Link
+          className="product-card__details"
+          to={`/products/${encodeURIComponent(product.id)}`}
+        >
           <h3>{product.name}</h3>
           <div className="product-card__metadata">
             <p
@@ -53,10 +65,11 @@ export function ProductCard({
               grįžta: {formatEuro.format(moneyBack)}
             </p>
           </div>
-        </div>
+        </Link>
         <button
-          aria-label="Pridėti į krepšelį"
+          aria-label={`Pridėti į krepšelį: ${product.name}`}
           className="product-card__add-button"
+          onClick={() => addToCart(product.id)}
           type="button"
         >
           <ShoppingCart aria-hidden="true" />

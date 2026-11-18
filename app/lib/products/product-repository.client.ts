@@ -9,7 +9,7 @@ import {
 } from "firebase/firestore";
 import { db } from "../firebase/firebase";
 import type {
-  Product,
+  ProductCatalogItem,
   ProductCountry,
   ProductGenre,
   ProductOperatingSystem,
@@ -17,7 +17,7 @@ import type {
   ProductRegion,
   ProductType,
 } from "./products";
-import { parseProduct } from "./products.client";
+import { parseProductCatalog } from "./product-parser";
 
 export type ProductFilters = {
   isPopular?: boolean;
@@ -47,8 +47,8 @@ export type ProductQueryOptions = {
   limit?: number;
 };
 
-const queryCache = new Map<string, Promise<Product[]>>();
-const productCache = new Map<string, Promise<Product | null>>();
+const queryCache = new Map<string, Promise<ProductCatalogItem[]>>();
+const productCache = new Map<string, Promise<ProductCatalogItem | null>>();
 
 export function getProducts(options: ProductQueryOptions = {}) {
   validateOptions(options);
@@ -90,7 +90,7 @@ export function getProductById(id: string) {
 }
 
 export function filterProducts(
-  products: Product[],
+  products: ProductCatalogItem[],
   filters: ProductFilters = {},
 ) {
   const search = filters.search?.trim().toLocaleLowerCase();
@@ -130,7 +130,7 @@ export function filterProducts(
 }
 
 export function sortProducts(
-  products: Product[],
+  products: ProductCatalogItem[],
   sortBy: ProductSortField,
   direction: "asc" | "desc" = "asc",
 ) {
@@ -181,7 +181,7 @@ async function loadProducts(options: ProductQueryOptions) {
       : await getDocs(productsCollection);
   let products = filterProducts(
     snapshot.docs.map((product) =>
-      parseProduct(product.id, product.data()),
+      parseProductCatalog(product.id, product.data()),
     ),
     filters,
   );
@@ -202,7 +202,7 @@ async function loadProducts(options: ProductQueryOptions) {
 async function loadProductById(id: string) {
   const snapshot = await getDoc(doc(db, "products", id));
   return snapshot.exists()
-    ? parseProduct(snapshot.id, snapshot.data())
+    ? parseProductCatalog(snapshot.id, snapshot.data())
     : null;
 }
 

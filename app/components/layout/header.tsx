@@ -1,19 +1,23 @@
-import { useEffect, useState } from "react";
-import { Search, ShoppingCart, TrendingUp, UserRound } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Search, ShoppingCart, TrendingUp, UserRound, X } from "lucide-react";
 import { Link } from "react-router";
 import type { User } from "firebase/auth";
+import { useCart } from "../../lib/cart/cart-context";
 import { subscribeToAuthChanges } from "../../lib/auth/auth.client";
 import { getPopularSearches } from "../../lib/searches/popular-searches.client";
 
 export function Header() {
+  const { cartButtonRef, itemCount, isCartOpen, openCart } = useCart();
   const [user, setUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const [searches, setSearches] = useState<Awaited<
     ReturnType<typeof getPopularSearches>
   > | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -41,6 +45,20 @@ export function Header() {
     };
   }, []);
 
+  useEffect(() => {
+    if (isMobileSearchOpen) searchInputRef.current?.focus();
+  }, [isMobileSearchOpen]);
+
+  function closeSearch() {
+    setIsOpen(false);
+    setIsMobileSearchOpen(false);
+  }
+
+  function expandMobileSearch() {
+    setIsMobileSearchOpen(true);
+    openSuggestions();
+  }
+
   function openSuggestions() {
     setIsOpen(true);
     if (searches || isLoading) return;
@@ -64,7 +82,7 @@ export function Header() {
         <button
           aria-label="Close search suggestions"
           className="search-backdrop"
-          onClick={() => setIsOpen(false)}
+          onClick={closeSearch}
           type="button"
         />
       )}
@@ -73,7 +91,18 @@ export function Header() {
           <img alt="Eneba" src="/logo.svg" width={222} height={69} />
         </a>
 
-        <div className="header-search">
+        <div
+          className={`header-search${isMobileSearchOpen ? " header-search--mobile-open" : ""}`}
+        >
+          <button
+            aria-expanded={isMobileSearchOpen}
+            aria-label="Atidaryti paiešką"
+            className="header-search__toggle"
+            onClick={expandMobileSearch}
+            type="button"
+          >
+            <Search aria-hidden="true" />
+          </button>
           <div className="header-search__field">
             <Search aria-hidden="true" className="header-search__icon" />
             <input
@@ -84,9 +113,18 @@ export function Header() {
               onChange={(event) => setSearch(event.currentTarget.value)}
               onFocus={openSuggestions}
               placeholder="Ieškoti žaidimų, papildymų ir daugiau"
+              ref={searchInputRef}
               role="combobox"
               value={search}
             />
+            <button
+              aria-label="Uždaryti paiešką"
+              className="header-search__close"
+              onClick={closeSearch}
+              type="button"
+            >
+              <X aria-hidden="true" />
+            </button>
           </div>
 
           {isOpen && (
@@ -114,7 +152,7 @@ export function Header() {
                       <button
                         onClick={() => {
                           setSearch(searchTerm);
-                          setIsOpen(false);
+                          closeSearch();
                         }}
                         type="button"
                       >
@@ -136,8 +174,18 @@ export function Header() {
         </div>
 
         <div className="site-header__actions">
-          <button className="header-action header-action--cart" type="button">
+          <button
+            aria-expanded={isCartOpen}
+            aria-label={`Atidaryti krepšelį, ${itemCount} prekės`}
+            className="header-action header-action--cart"
+            onClick={openCart}
+            ref={cartButtonRef}
+            type="button"
+          >
             <ShoppingCart aria-hidden="true" />
+            <span aria-live="polite" className="header-cart-count">
+              {itemCount}
+            </span>
           </button>
           <nav aria-label="Account" className="account-actions">
             {user ? (

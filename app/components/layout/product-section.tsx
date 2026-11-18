@@ -1,14 +1,14 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { ProductCard } from "./product-card";
-import type { Product } from "../../lib/products/products";
+import type { ProductCatalogItem } from "../../lib/products/products";
 
 const PRODUCTS_PER_SLIDE = 5;
 const MOBILE_PRODUCT_LIMIT = 10;
 
 type ProductSectionProps = {
   title: string;
-  loadProducts: () => Promise<Product[]>;
+  loadProducts: () => Promise<ProductCatalogItem[]>;
   loadingMessage?: string;
   errorMessage?: string;
   variant: "primary" | "secondary";
@@ -21,7 +21,7 @@ export function ProductSection({
   errorMessage = "Nepavyko įkelti produktų.",
   variant,
 }: ProductSectionProps) {
-  const [products, setProducts] = useState<Product[] | null>(null);
+  const [products, setProducts] = useState<ProductCatalogItem[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isMobile, setIsMobile] = useState(false);

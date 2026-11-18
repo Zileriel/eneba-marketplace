@@ -23,13 +23,13 @@
   - Add product filtering.
   - Implement the product grid layout.
 
-- [ ] **Product Details Page**
+- [x] **Product Details Page**
   - Implement individual product detail pages.
 
-- [ ] **Stripe Integration**
+- [x] **Stripe Integration**
   - Integrate Stripe in test mode.
   - Implement and test the payment flow.
 
-- [ ] **Header Improvements**
+- [x] **Header Improvements**
   - Update and refine the existing header.
   - Implement a fully functional shopping cart.

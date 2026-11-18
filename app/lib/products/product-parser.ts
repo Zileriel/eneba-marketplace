@@ -5,10 +5,13 @@ import {
   PRODUCT_PLATFORMS,
   PRODUCT_REGIONS,
   PRODUCT_TYPES,
-  type Product,
+  type ProductCatalogItem,
 } from "./products";
 
-export function parseProduct(id: string, value: unknown): Product {
+export function parseProductCatalog(
+  id: string,
+  value: unknown,
+): ProductCatalogItem {
   if (!isRecord(value)) {
     throw new Error(`Product "${id}" has invalid data.`);
   }
@@ -25,7 +28,6 @@ export function parseProduct(id: string, value: unknown): Product {
     operatingSystems,
     genres,
     country,
-    productKey,
     isRecommended,
     recommendedOrder,
     isPopular,
@@ -35,6 +37,7 @@ export function parseProduct(id: string, value: unknown): Product {
   if (
     typeof coverImage !== "string" ||
     typeof name !== "string" ||
+    name.trim().length === 0 ||
     !isValuesFrom(regions, PRODUCT_REGIONS) ||
     regions.length === 0 ||
     typeof price !== "number" ||
@@ -50,7 +53,6 @@ export function parseProduct(id: string, value: unknown): Product {
     !isValuesFrom(genres, PRODUCT_GENRES) ||
     !isValueFrom(country, PRODUCT_COUNTRIES) ||
     currency !== "EUR" ||
-    typeof productKey !== "string" ||
     typeof isRecommended !== "boolean" ||
     !isOptionalOrder(recommendedOrder) ||
     typeof isPopular !== "boolean" ||
@@ -72,7 +74,6 @@ export function parseProduct(id: string, value: unknown): Product {
     operatingSystems,
     genres,
     country,
-    productKey,
     isRecommended,
     ...(recommendedOrder === undefined ? {} : { recommendedOrder }),
     isPopular,

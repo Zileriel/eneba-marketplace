@@ -1,13 +1,10 @@
 import popularSearches from "../data/popular-searches.json" with { type: "json" };
-import { initializeFirebaseAppFromEnvironment } from "./firebase-app.mjs";
-import { doc, getFirestore, writeBatch } from "firebase/firestore";
+import { db } from "./firebase-admin.mjs";
 
-const firebaseApp = initializeFirebaseAppFromEnvironment();
-const db = getFirestore(firebaseApp);
-const batch = writeBatch(db);
+const batch = db.batch();
 
 for (const { id, ...search } of popularSearches) {
-  batch.set(doc(db, "popular_searches", id), search);
+  batch.set(db.collection("popular_searches").doc(id), search);
 }
 
 await batch.commit();
