@@ -338,6 +338,361 @@ button {
   }
 }
 
+.recommended-products {
+  box-sizing: border-box;
+  width: min(calc(100% - 40px), 1240px);
+  margin: 40px auto 0;
+  padding: 14px 20px 26px;
+  background: #4618ac;
+  color: #fff;
+}
+
+.recommended-products__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 34px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.recommended-products__title svg {
+  width: 16px;
+  height: 16px;
+  color: rgb(255 255 255 / 70%);
+  stroke-width: 1.5;
+}
+
+.recommended-products__grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.product-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #24d6c1;
+  background: #1f0a4e;
+}
+
+.product-card__cover {
+  position: relative;
+  width: 100%;
+  flex: 0 0 auto;
+  overflow: hidden;
+  aspect-ratio: 4 / 5;
+  background: #200a4c;
+}
+
+.product-card__cover > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+}
+
+.product-card__cashback-badge {
+  position: absolute;
+  bottom: 32px;
+  left: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 29px;
+  padding: 0 6px;
+  background: #5de7d8;
+  color: #062b42;
+  font-size: 12px;
+  font-weight: 800;
+  transition: transform 320ms ease;
+}
+
+.product-card__cashback-badge svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2;
+}
+
+.product-card__platform {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  height: 22px;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  overflow: hidden;
+  padding: 0 6px;
+  background: rgb(0 0 0 / 68%);
+  color: #e8e4ed;
+  font-size: 10px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: transform 320ms ease;
+}
+
+.product-card__platform svg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: #80ea49;
+}
+
+.product-card__body {
+  position: relative;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  padding: 24px 14px 34px;
+  overflow: hidden;
+  background: #1f0a4e;
+  transition: transform 320ms ease;
+}
+
+.product-card__details {
+  transition: transform 320ms ease;
+}
+
+.product-card__details h3 {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.product-card__region {
+  margin: 6px 0 0;
+  overflow: hidden;
+  font-size: 12px;
+  font-weight: 800;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.product-card__region--europe {
+  color: #38f7c5;
+}
+
+.product-card__region--usa,
+.product-card__region--global {
+  color: #f74eb4;
+}
+
+.product-card__from {
+  margin: 7px 0 0;
+  color: #aba1be;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.product-card__price {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: -1px 0 0;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+
+.product-card__price svg {
+  width: 15px;
+  height: 15px;
+  color: #b7aacd;
+  stroke-width: 1.5;
+}
+
+.product-card__money-back {
+  margin: 3px 0 0;
+  color: #70fa13;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.product-card__add-button {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  left: 12px;
+  display: flex;
+  min-height: 36px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transform: translateY(14px);
+  border: 0;
+  background: #fad318;
+  color: #1f0a4e;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 800;
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    transform 320ms ease,
+    opacity 240ms ease;
+}
+
+.product-card__add-button svg {
+  width: 16px;
+  height: 16px;
+}
+
+.product-card:hover .product-card__body,
+.product-card:focus-within .product-card__details {
+  transform: translateY(-24px);
+}
+
+.product-card:hover .product-card__cashback-badge,
+.product-card:focus-within .product-card__cashback-badge,
+.product-card:hover .product-card__platform,
+.product-card:focus-within .product-card__platform {
+  transform: translateY(-24px);
+}
+
+.product-card:hover .product-card__add-button,
+.product-card:focus-within .product-card__add-button {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.recommended-products__message {
+  display: flex;
+  min-height: 160px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin: 0;
+  font-size: 14px;
+}
+
+.recommended-products__message button {
+  padding: 8px 12px;
+  border: 1px solid #fff;
+  background: transparent;
+  cursor: pointer;
+}
+
+.recommended-products__view-all {
+  display: block;
+  min-width: 194px;
+  min-height: 36px;
+  margin: 40px auto 0;
+  padding: 6px 18px;
+  border: 1px solid #fff;
+  background: transparent;
+  color: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.recommended-products__view-all:hover,
+.recommended-products__view-all:focus-visible {
+  background: rgb(255 255 255 / 10%);
+}
+
+@media (max-width: 1180px) {
+  .recommended-products__grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .recommended-products__grid > .product-card:nth-child(5) {
+    display: none;
+  }
+}
+
+@media (max-width: 960px) {
+  .recommended-products__grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .recommended-products__grid > .product-card:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 740px) {
+  .recommended-products__grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .product-card:hover .product-card__body,
+  .product-card:focus-within .product-card__body,
+  .product-card:hover .product-card__details,
+  .product-card:focus-within .product-card__details,
+  .product-card:hover .product-card__cashback-badge,
+  .product-card:focus-within .product-card__cashback-badge,
+  .product-card:hover .product-card__platform,
+  .product-card:focus-within .product-card__platform {
+    transform: none;
+  }
+
+  .product-card {
+    min-height: 172px;
+    flex-direction: row;
+  }
+
+  .product-card__cover {
+    width: 96px;
+    height: 132px;
+    flex: 0 0 96px;
+    align-self: center;
+    margin: 10px 0 10px 8px;
+    aspect-ratio: auto;
+  }
+
+  .product-card__cashback-badge {
+    top: 48px;
+    right: 8px;
+    bottom: auto;
+    left: auto;
+    width: 24px;
+    min-height: 24px;
+    justify-content: center;
+    padding: 0;
+    font-size: 0;
+  }
+
+  .product-card__body {
+    flex: 1 1 0;
+    min-width: 0;
+    padding: 24px 60px 24px 8px;
+  }
+
+  .product-card__add-button {
+    right: 8px;
+    bottom: 8px;
+    left: auto;
+    width: 50px;
+    height: 40px;
+    min-height: 40px;
+    padding: 0;
+    transform: none;
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .product-card__add-label {
+    display: none;
+  }
+
+  .recommended-products__title {
+    margin-bottom: 24px;
+    font-size: 24px;
+  }
+}
+
 @media (max-width: 900px) {
   .site-header__inner {
     gap: 16px;

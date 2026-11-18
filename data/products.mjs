@@ -106,9 +106,73 @@ const countries = [
   "Ispanija",
 ];
 
+const recommendedMockups = [
+  {
+    name: "Grand Theft Auto VI (PS5) PSN Key EUROPE",
+    coverImage: "/images/banners/banner-1-collapsed.jpg",
+    regions: ["Europa"],
+    price: 72.83,
+    moneyBackPercent: 14,
+    platform: "PlayStation Network",
+    productType: "Žaidimai",
+    operatingSystems: [],
+    genres: ["Veiksmo"],
+    country: "Lietuva",
+  },
+  {
+    name: "PlayStation Network Card 100 USD (USA) PSN Key UNITED STATES",
+    coverImage: "/images/products/psn-network-card.svg",
+    regions: ["JAV"],
+    price: 89.78,
+    moneyBackPercent: 5,
+    platform: "PlayStation Network",
+    productType: "E. Kortelės",
+    operatingSystems: [],
+    genres: [],
+    country: "Jungtinės Amerikos Valstijos",
+  },
+  {
+    name: "Grand Theft Auto VI: Ultimate Edition (Xbox Series X|S) XBOX LIVE",
+    coverImage: "/images/banners/banner-1-collapsed.jpg",
+    regions: ["Europa"],
+    price: 81.99,
+    moneyBackPercent: 14,
+    platform: "Xbox Live",
+    productType: "Žaidimai",
+    operatingSystems: [],
+    genres: ["Veiksmo", "Nuotykių"],
+    country: "Lietuva",
+  },
+  {
+    name: "Grand Theft Auto VI (Xbox Series X|S) XBOX LIVE Key EUROPE",
+    coverImage: "/images/banners/banner-1-collapsed.jpg",
+    regions: ["Visas Pasaulis"],
+    price: 64.98,
+    moneyBackPercent: 11,
+    platform: "Xbox Live",
+    productType: "Žaidimai",
+    operatingSystems: [],
+    genres: ["Veiksmo"],
+    country: "Lietuva",
+  },
+  {
+    name: "Grand Theft Auto VI: Ultimate Edition (Xbox Series X|S) XBOX LIVE GLOBAL",
+    coverImage: "/images/banners/banner-1-collapsed.jpg",
+    regions: ["Visas Pasaulis"],
+    price: 82.1,
+    moneyBackPercent: 11,
+    platform: "Xbox Live",
+    productType: "Žaidimai",
+    operatingSystems: [],
+    genres: ["Veiksmo", "Nuotykių"],
+    country: "Lietuva",
+  },
+];
+
 export const demoProducts = Array.from({ length: 100 }, (_, index) => {
   const serial = String(index + 1).padStart(3, "0");
   const productTypeIndex = index % productTypes.length;
+  const isRecommended = index < recommendedMockups.length;
 
   return {
     id: `demo-product-${serial}`,
@@ -125,5 +189,12 @@ export const demoProducts = Array.from({ length: 100 }, (_, index) => {
     country: countries[index % countries.length],
     productKey: `DEMO-NOT-REDEEMABLE-${serial}`,
     isDemo: true,
+    isRecommended,
+    ...(isRecommended
+      ? {
+          ...recommendedMockups[index],
+          recommendedOrder: index + 1,
+        }
+      : {}),
   };
 });

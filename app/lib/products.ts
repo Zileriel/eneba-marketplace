@@ -82,4 +82,6 @@ export interface Product {
   country: ProductCountry;
   productKey: string;
   isDemo: true;
+  isRecommended: boolean;
+  recommendedOrder?: number;
 }

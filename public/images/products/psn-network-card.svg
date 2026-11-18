@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 800" fill="none">
+  <defs>
+    <linearGradient id="background" x1="30" y1="0" x2="610" y2="800" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1673c9"/>
+      <stop offset="1" stop-color="#003a82"/>
+    </linearGradient>
+    <linearGradient id="card" x1="190" y1="300" x2="450" y2="570" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#08b7ed"/>
+      <stop offset="1" stop-color="#0872bf"/>
+    </linearGradient>
+  </defs>
+  <path fill="url(#background)" d="M0 0h640v800H0z"/>
+  <circle cx="542" cy="146" r="152" fill="#65c8ff" opacity=".14"/>
+  <circle cx="67" cy="698" r="191" fill="#70d4ff" opacity=".12"/>
+  <text x="54" y="126" fill="#fff" font-family="Arial, sans-serif" font-size="52" font-weight="700">PlayStation</text>
+  <text x="54" y="180" fill="#fff" font-family="Arial, sans-serif" font-size="42">Store</text>
+  <rect x="54" y="236" width="532" height="438" rx="22" fill="url(#card)"/>
+  <rect x="76" y="258" width="488" height="394" rx="14" stroke="#fff" stroke-opacity=".35" stroke-width="3"/>
+  <path d="M270 361c-8-4-16-2-16 7v135c0 12 9 18 21 15l37-12V364l-42-3Zm73 15v126l45 14c12 4 22-3 22-16V382c0-11-8-16-18-12l-49 6Zm-61 170 50 16v-45l-50 17v12Zm-25 46 145-47v39l-145 47v-39Z" fill="#fff"/>
+  <text x="320" y="738" fill="#fff" font-family="Arial, sans-serif" font-size="26" font-weight="700" text-anchor="middle">$100 USD • DEMO</text>
+</svg>
