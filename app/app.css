@@ -260,13 +260,82 @@ button {
 }
 
 .home-content {
-  padding: 32px 24px;
+  padding: 32px 0 48px;
 }
 
-.home-content h1 {
+.home-banner-row {
+  display: flex;
   margin: 0 auto;
-  max-width: calc(1200px - 40px);
-  font-size: 24px;
+  width: 100%;
+  max-width: 1920px;
+  height: clamp(260px, 31.25vw, 400px);
+  gap: 0px;
+  overflow: hidden;
+}
+
+.home-banner {
+  position: relative;
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #1f0a4e;
+  cursor: pointer;
+  transition: flex-grow 650ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.home-banner--expanded {
+  flex-grow: 7;
+}
+
+.home-banner__image {
+  position: absolute;
+  inset: 0;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  transition: opacity 300ms ease;
+}
+
+.home-banner__image--collapsed {
+  opacity: 1;
+}
+
+.home-banner__image--expanded {
+  opacity: 0;
+}
+
+.home-banner--expanded .home-banner__image--collapsed {
+  opacity: 0;
+}
+
+.home-banner--expanded .home-banner__image--expanded {
+  opacity: 1;
+}
+
+.home-banner:focus-visible {
+  z-index: 1;
+  outline: 3px solid #fad318;
+  outline-offset: -3px;
+}
+
+@media (max-width: 620px) {
+  .home-banner-row {
+    height: 260px;
+    gap: 5px;
+  }
+
+  .home-banner--expanded {
+    flex-grow: 4;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-banner,
+  .home-banner__image {
+    transition: none;
+  }
 }
 
 @media (max-width: 900px) {
