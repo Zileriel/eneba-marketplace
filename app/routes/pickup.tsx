@@ -15,11 +15,14 @@ import { formatEuro } from "../utils/currency";
 import { useCart } from "../lib/cart/cart-context";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
+  wallet: "„Eneba“ piniginė",
   card: "Banko kortelė",
   paypal: "PayPal",
   swedbank: "Swedbank",
   seb: "SEB",
   luminor: "Luminor",
+  revolut: "Revolut",
+  artea: "Šiaulių bankas",
 };
 
 type ReceiptItem = {
@@ -170,8 +173,7 @@ export default function PickupPage({ loaderData }: Route.ComponentProps) {
         </p>
         {isPaid && loaderData.selectedMethod && (
           <p className="checkout-result__method">
-            Pasirinktas demonstracinis būdas: {loaderData.selectedMethod}.
-            Testinis mokėjimas atliktas Stripe kortelės forma.
+            Mokėjimo būdas: {loaderData.selectedMethod}.
           </p>
         )}
         {loaderData.items.length > 0 && (

@@ -1,8 +1,11 @@
-import { Form, Link, useNavigation, useSearchParams } from "react-router";
+import { Form, useNavigation, useSearchParams } from "react-router";
 import { data, redirect } from "react-router";
-import { CreditCard, Landmark, WalletCards } from "lucide-react";
 import type { Route } from "./+types/checkout";
-import { getCartSummary, useCartProducts } from "../components/cart/cart-lines";
+import {
+  CartLineItem,
+  getCartSummary,
+  useCartProducts,
+} from "../components/cart/cart-lines";
 import { CheckoutHeader } from "../components/layout/checkout-header";
 import { formatEuro } from "../utils/currency";
 import { useCart, type CartItem } from "../lib/cart/cart-context";
@@ -17,39 +20,52 @@ import {
 const MAX_CART_QUANTITY = 99;
 const PAYMENT_METHODS = [
   {
+    id: "wallet",
+    label: "„Eneba“ piniginė",
+    logo: "eneba",
+    description: "Bendras likutis: 0,00 €",
+  },
+  {
     id: "card",
-    label: "Banko kortelė",
-    description: "Visa, Mastercard",
-    icon: CreditCard,
-    isDemo: false,
+    label: "Credit or debit card",
+    logo: "card",
+    description: "Pay via Visa, Mastercard, or Maestro debit or credit card",
   },
   {
     id: "paypal",
     label: "PayPal",
-    description: "Demonstracinis pasirinkimas",
-    icon: WalletCards,
-    isDemo: true,
+    logo: "PayPal",
+    description: "",
   },
   {
     id: "swedbank",
     label: "Swedbank",
-    description: "Demonstracinis pasirinkimas",
-    icon: Landmark,
-    isDemo: true,
+    logo: "Swedbank",
+    description: "",
   },
   {
     id: "seb",
     label: "SEB",
-    description: "Demonstracinis pasirinkimas",
-    icon: Landmark,
-    isDemo: true,
+    logo: "SEB",
+    description: "",
   },
   {
     id: "luminor",
     label: "Luminor",
-    description: "Demonstracinis pasirinkimas",
-    icon: Landmark,
-    isDemo: true,
+    logo: "Luminor",
+    description: "",
+  },
+  {
+    id: "revolut",
+    label: "Revolut",
+    logo: "Revolut",
+    description: "",
+  },
+  {
+    id: "artea",
+    label: "Šiaulių bankas",
+    logo: "Artea",
+    description: "",
   },
 ] as const;
 type PaymentMethodId = (typeof PAYMENT_METHODS)[number]["id"];
@@ -159,9 +175,18 @@ export async function action({ request }: Route.ActionArgs) {
 export default function CheckoutPage({
   actionData,
 }: Route.ComponentProps) {
-  const { items, isHydrated } = useCart();
+  const { items, isHydrated, removeFromCart, setQuantity } = useCart();
   const { products, isLoading, error, retry } = useCartProducts(items);
   const { total, hasUnavailableProduct } = getCartSummary(items, products);
+  const cashback = items.reduce((amount, item) => {
+    const product = products.get(item.productId);
+    return (
+      amount +
+      (product
+        ? (product.price * item.quantity * product.moneyBackPercent) / 100
+        : 0)
+    );
+  }, 0);
   const navigation = useNavigation();
   const [searchParams] = useSearchParams();
   const isSubmitting = navigation.state === "submitting";
@@ -176,7 +201,7 @@ export default function CheckoutPage({
     <main className="checkout-page">
       <CheckoutHeader activeStep="payment" />
       <div className="checkout-page__content">
-        <h1>Apmokėjimas</h1>
+        <h1 className="checkout-page__visually-hidden">Apmokėjimas</h1>
         {searchParams.get("payment") === "cancelled" && (
           <p className="checkout-message" role="status">
             Mokėjimas atšauktas. Krepšelis liko išsaugotas.
@@ -193,55 +218,97 @@ export default function CheckoutPage({
             aria-labelledby="checkout-methods-title"
             className="checkout-page__items checkout-page__methods"
           >
-            <h2 id="checkout-methods-title">Mokėjimo būdas</h2>
-            {!isHydrated || isLoading ? (
-              <p className="cart-message" role="status">Įkeliama...</p>
-            ) : error ? (
-              <div className="cart-message" role="alert">
-                <p>{error}</p>
-                <button onClick={retry} type="button">Bandykite dar kartą</button>
-              </div>
-            ) : (
-              <fieldset className="payment-methods">
-                <legend>Pasirinkite mokėjimo būdą</legend>
-                {PAYMENT_METHODS.map((method, index) => {
-                  const Icon = method.icon;
-                  return (
-                    <label className="payment-method" key={method.id}>
-                      <input
-                        defaultChecked={index === 0}
-                        name="paymentMethod"
-                        required
-                        type="radio"
-                        value={method.id}
-                      />
-                      <span aria-hidden="true" className="payment-method__icon">
-                        <Icon />
-                      </span>
-                      <span className="payment-method__details">
-                        <span className="payment-method__name">{method.label}</span>
-                        <span className="payment-method__description">
-                          {method.description}
+            <h2 className="checkout-page__visually-hidden" id="checkout-methods-title">
+              Mokėjimo būdas
+            </h2>
+            <fieldset className="payment-methods">
+              <legend className="checkout-page__visually-hidden">
+                Pasirinkite mokėjimo būdą
+              </legend>
+              {PAYMENT_METHODS.map((method) => (
+                <label className="payment-method" key={method.id}>
+                  <input
+                    name="paymentMethod"
+                    required
+                    type="radio"
+                    value={method.id}
+                  />
+                  <span
+                    aria-hidden="true"
+                    className={`payment-method__icon payment-method__icon--${method.id}`}
+                  >
+                    {method.id === "card" ? (
+                      <>
+                        <strong>VISA</strong>
+                        <span className="payment-method__mastercard">
+                          <i />
+                          <i />
                         </span>
+                      </>
+                    ) : (
+                      <strong>{method.logo}</strong>
+                    )}
+                  </span>
+                  <span className="payment-method__details">
+                    <span className="payment-method__name">{method.label}</span>
+                    {method.description && (
+                      <span className="payment-method__description">
+                        {method.description}
                       </span>
-                      {method.isDemo && (
-                        <span className="payment-method__badge">DEMO</span>
-                      )}
-                    </label>
-                  );
-                })}
-              </fieldset>
-            )}
+                    )}
+                  </span>
+                </label>
+              ))}
+            </fieldset>
           </section>
-          <aside aria-labelledby="checkout-summary-title" className="checkout-page__summary">
-            <h2 id="checkout-summary-title">Suvestinė</h2>
+          <aside
+            aria-labelledby="checkout-summary-title"
+            className="checkout-page__summary"
+          >
+            <h2 className="checkout-page__visually-hidden" id="checkout-summary-title">
+              Pirkinių suvestinė
+            </h2>
+            <div className="checkout-page__product-list">
+              {!isHydrated || isLoading ? (
+                <p className="cart-message" role="status">
+                  Įkeliamas krepšelis...
+                </p>
+              ) : error ? (
+                <div className="cart-message" role="alert">
+                  <p>{error}</p>
+                  <button onClick={retry} type="button">
+                    Bandykite dar kartą
+                  </button>
+                </div>
+              ) : items.length === 0 ? (
+                <p className="cart-message">Krepšelis tuščias.</p>
+              ) : (
+                items.map((item) => (
+                  <CartLineItem
+                    key={item.productId}
+                    onChangeQuantity={(quantity) =>
+                      setQuantity(item.productId, quantity)
+                    }
+                    onRemove={() => removeFromCart(item.productId)}
+                    product={products.get(item.productId)}
+                    quantity={item.quantity}
+                    variant="page"
+                  />
+                ))
+              )}
+            </div>
             <p className="checkout-page__total">
-              <span>Iš viso</span>
+              <span>Prekių suma</span>
               <strong>{formatEuro(total)}</strong>
             </p>
-            <p className="checkout-page__payment-note">
-              Testavimo metu visi pasirinkimai tęsiami per Stripe kortelės formą.
-              PayPal ir bankų pasirinkimai yra demonstraciniai.
+            {cashback > 0 && (
+              <p className="checkout-page__cashback">
+                Grįžta: {formatEuro(cashback)}
+              </p>
+            )}
+            <p className="checkout-page__grand-total">
+              <span>Iš viso</span>
+              <strong>{formatEuro(total)}</strong>
             </p>
             {hasUnavailableProduct && (
               <p className="checkout-message checkout-message--error" role="alert">
@@ -253,13 +320,27 @@ export default function CheckoutPage({
               disabled={!canPay || isSubmitting}
               type="submit"
             >
-              {isSubmitting
-                ? "Jungiama prie Stripe..."
-                : `Mokėti ${formatEuro(total)}`}
+              {isSubmitting ? "Tęsiama..." : "Tęsti"}
             </button>
-            <Link className="checkout-page__back" to="/cart">
-              Grįžti į krepšelį
-            </Link>
+            <p className="checkout-page__terms">
+              Paspaudę „Tęsti“ sutinkate su mūsų{" "}
+              <a
+                href="https://www.eneba.com/lt/terms-and-conditions"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Taisyklėmis ir Sąlygomis
+              </a>{" "}
+              bei{" "}
+              <a
+                href="https://www.eneba.com/lt/privacy-policy"
+                rel="noreferrer"
+                target="_blank"
+              >
+                Privatumo Pranešimu
+              </a>
+              .
+            </p>
           </aside>
         </Form>
       </div>

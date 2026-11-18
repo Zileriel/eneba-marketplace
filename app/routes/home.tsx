@@ -20,6 +20,13 @@ function loadPopularProducts() {
   });
 }
 
+function loadPopularGiftCards() {
+  return getProducts({
+    filters: { productTypes: ["E. Kortelės"] },
+    sortBy: "name",
+  });
+}
+
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "Eneba" },
@@ -46,6 +53,13 @@ export default function Home() {
           loadProducts={loadPopularProducts}
           loadingMessage="Įkeliami populiariausi žaidimai..."
           variant="secondary"
+        />
+        <ProductSection
+          title="Populiariausios el. dovanų kortelės"
+          errorMessage="Nepavyko įkelti populiariausių dovanų kortelių."
+          loadProducts={loadPopularGiftCards}
+          loadingMessage="Įkeliamos populiariausios dovanų kortelės..."
+          variant="primary"
         />
       </main>
     </>
