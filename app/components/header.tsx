@@ -70,7 +70,7 @@ export function Header() {
       )}
       <div className="site-header__inner">
         <a aria-label="Eneba home" className="site-header__brand" href="/">
-          <img alt="Eneba" src="/logo.svg" />
+          <img alt="Eneba" src="/logo.svg" width={222} height={69} />
         </a>
 
         <div className="header-search">

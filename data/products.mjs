@@ -169,10 +169,18 @@ const recommendedMockups = [
   },
 ];
 
+const popularProductIndexes = [
+  0, 2, 3, 4, 8, 16, 24, 32, 40, 48, 56, 64, 72, 80, 88,
+];
+const popularOrderByIndex = new Map(
+  popularProductIndexes.map((index, order) => [index, order + 1]),
+);
+
 export const demoProducts = Array.from({ length: 100 }, (_, index) => {
   const serial = String(index + 1).padStart(3, "0");
   const productTypeIndex = index % productTypes.length;
   const isRecommended = index < recommendedMockups.length;
+  const popularOrder = popularOrderByIndex.get(index);
 
   return {
     id: `demo-product-${serial}`,
@@ -190,6 +198,8 @@ export const demoProducts = Array.from({ length: 100 }, (_, index) => {
     productKey: `DEMO-NOT-REDEEMABLE-${serial}`,
     isDemo: true,
     isRecommended,
+    isPopular: popularOrder !== undefined,
+    ...(popularOrder === undefined ? {} : { popularOrder }),
     ...(isRecommended
       ? {
           ...recommendedMockups[index],

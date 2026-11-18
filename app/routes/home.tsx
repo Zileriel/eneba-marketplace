@@ -1,6 +1,7 @@
 import type { Route } from "./+types/home";
 import { Header } from "../components/header";
 import { HomeBannerRow } from "../components/home-banner-row";
+import { PopularGames } from "../components/popular-games";
 import { RecommendedProducts } from "../components/recommended-products";
 
 export function meta({}: Route.MetaArgs) {
@@ -17,6 +18,7 @@ export default function Home() {
       <main className="home-content">
         <HomeBannerRow />
         <RecommendedProducts />
+        <PopularGames />
       </main>
     </>
   );

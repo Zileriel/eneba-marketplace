@@ -84,4 +84,6 @@ export interface Product {
   isDemo: true;
   isRecommended: boolean;
   recommendedOrder?: number;
+  isPopular: boolean;
+  popularOrder?: number;
 }
