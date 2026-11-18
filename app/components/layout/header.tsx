@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Search, ShoppingCart, TrendingUp, UserRound } from "lucide-react";
 import { Link } from "react-router";
 import type { User } from "firebase/auth";
-import { subscribeToAuthChanges } from "../lib/auth/auth.client";
-import { getPopularSearches } from "../lib/searches/popular-searches.client";
+import { subscribeToAuthChanges } from "../../lib/auth/auth.client";
+import { getPopularSearches } from "../../lib/searches/popular-searches.client";
 
 export function Header() {
   const [user, setUser] = useState<User | null>(null);

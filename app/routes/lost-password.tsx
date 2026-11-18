@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
 import { Link } from "react-router";
-import { AuthShell } from "../components/auth-shell";
+import { AuthShell } from "../components/layout/auth-shell";
 import {
   getAuthErrorMessage,
   sendPasswordReset,

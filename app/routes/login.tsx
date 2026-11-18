@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
-import { AuthShell } from "../components/auth-shell";
-import { PasswordField } from "../components/password-field";
+import { AuthShell } from "../components/layout/auth-shell";
+import { PasswordField } from "../components/input/password-field";
 import { getAuthErrorMessage, signInWithEmail } from "../lib/auth/auth.client";
 import type { Route } from "./+types/login";
 

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { ProductCard } from "./product-card";
-import type { Product } from "../lib/products/products";
+import type { Product } from "../../lib/products/products";
 
 const PRODUCTS_PER_SLIDE = 5;
 const MOBILE_PRODUCT_LIMIT = 10;
@@ -11,7 +11,7 @@ type ProductSectionProps = {
   loadProducts: () => Promise<Product[]>;
   loadingMessage?: string;
   errorMessage?: string;
-  variant: "recommended" | "popular";
+  variant: "primary" | "secondary";
 };
 
 export function ProductSection({

@@ -1,5 +1,5 @@
 import { CirclePlus, Gamepad2, Info, ShoppingCart } from "lucide-react";
-import type { Product } from "../lib/products/products";
+import type { Product } from "../../lib/products/products";
 
 const formatEuro = new Intl.NumberFormat("lt-LT", {
   style: "currency",
