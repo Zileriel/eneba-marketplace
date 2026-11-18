@@ -1,3 +1,12 @@
+import {
+  collection,
+  getDocs,
+  getDocsFromCache,
+  orderBy,
+  query,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
 export interface PopularSearch {
   id: string;
   searchTerm: string;
@@ -18,11 +27,6 @@ export function getPopularSearches() {
 }
 
 async function loadPopularSearches(): Promise<PopularSearch[]> {
-  const [{ collection, getDocs, getDocsFromCache, orderBy, query }, { db }] =
-    await Promise.all([
-      import("firebase/firestore"),
-      import("./firebase"),
-    ]);
   const popularSearchesQuery = query(
     collection(db, "popular_searches"),
     orderBy("rank"),

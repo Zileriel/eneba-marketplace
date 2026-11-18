@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, ShoppingCart, TrendingUp, UserRound } from "lucide-react";
+import { Link } from "react-router";
+import type { User } from "firebase/auth";
+import { subscribeToAuthChanges } from "../lib/auth.client";
 import { getPopularSearches } from "../lib/popular-searches.client";
 
 export function Header() {
+  const [user, setUser] = useState<User | null>(null);
   const [search, setSearch] = useState("");
   const [isOpen, setIsOpen] = useState(false);
   const [searches, setSearches] = useState<Awaited<
@@ -10,6 +14,32 @@ export function Header() {
   > | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    let unsubscribe: (() => void) | undefined;
+
+    try {
+      unsubscribe = subscribeToAuthChanges(
+        (nextUser) => {
+          if (isMounted) setUser(nextUser);
+        },
+        (cause) => {
+          console.error(
+            "Failed to observe Firebase authentication state.",
+            cause,
+          );
+        },
+      );
+    } catch (cause) {
+      console.error("Failed to initialize Firebase authentication.", cause);
+    }
+
+    return () => {
+      isMounted = false;
+      unsubscribe?.();
+    };
+  }, []);
 
   function openSuggestions() {
     setIsOpen(true);
@@ -110,16 +140,29 @@ export function Header() {
             <ShoppingCart aria-hidden="true" />
           </button>
           <nav aria-label="Account" className="account-actions">
-            <button className="header-action" type="button">
-              <UserRound aria-hidden="true" />
-              <span>Prisijungti</span>
-            </button>
-            <span aria-hidden="true" className="account-actions__divider">
-              |
-            </span>
-            <button className="header-action" type="button">
-              <span>Registruotis</span>
-            </button>
+            {user ? (
+              <span
+                aria-label={`Profilis: ${user.email ?? ""}`}
+                className="account-profile"
+                title={user.email ?? "Profilis"}
+              >
+                <UserRound aria-hidden="true" />
+                <span>{user.displayName || user.email || "Profilis"}</span>
+              </span>
+            ) : (
+              <>
+                <Link className="header-action" to="/login">
+                  <UserRound aria-hidden="true" />
+                  <span>Prisijungti</span>
+                </Link>
+                <span aria-hidden="true" className="account-actions__divider">
+                  |
+                </span>
+                <Link className="header-action" to="/register">
+                  <span>Registruotis</span>
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </div>
