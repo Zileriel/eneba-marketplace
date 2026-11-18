@@ -9,6 +9,7 @@ import {
 
 import type { Route } from "./+types/root";
 import { CartOverlays } from "./components/cart/cart-overlays";
+import { Footer } from "./components/layout/footer";
 import { CartProvider } from "./lib/cart/cart-context";
 import "./app.css";
 
@@ -46,7 +47,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
 export default function App() {
   return (
     <CartProvider>
-      <Outlet />
+      <div className="app-shell">
+        <div className="app-shell__content">
+          <Outlet />
+        </div>
+        <Footer />
+      </div>
       <CartOverlays />
     </CartProvider>
   );
