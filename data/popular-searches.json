@@ -1,0 +1,52 @@
+[
+  {
+    "id": "minecraft",
+    "searchTerm": "minecraft",
+    "rank": 1
+  },
+  {
+    "id": "robux",
+    "searchTerm": "robux",
+    "rank": 2
+  },
+  {
+    "id": "cyberpunk",
+    "searchTerm": "cyberpunk",
+    "rank": 3
+  },
+  {
+    "id": "call-of-duty",
+    "searchTerm": "call of duty",
+    "rank": 4
+  },
+  {
+    "id": "fortnite",
+    "searchTerm": "fortnite",
+    "rank": 5
+  },
+  {
+    "id": "gta6",
+    "searchTerm": "gta6",
+    "rank": 6
+  },
+  {
+    "id": "roblox",
+    "searchTerm": "roblox",
+    "rank": 7
+  },
+  {
+    "id": "call-of-duty-modern-warfare-4",
+    "searchTerm": "call of duty modern warfare 4",
+    "rank": 8
+  },
+  {
+    "id": "nba-2k27",
+    "searchTerm": "nba 2k27",
+    "rank": 9
+  },
+  {
+    "id": "bodycam",
+    "searchTerm": "bodycam",
+    "rank": 10
+  }
+]
