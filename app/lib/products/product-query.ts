@@ -37,11 +37,42 @@ export type ProductQueryOptions = {
   limit?: number;
 };
 
+export function searchProducts(
+  products: ProductCatalogItem[],
+  searchText: string,
+) {
+  const query = normalizeSearchText(searchText);
+  if (!query) return [];
+
+  return products
+    .map((product, index) => ({
+      product,
+      index,
+      score: getProductSearchScore(product, query),
+    }))
+    .filter(
+      (
+        result,
+      ): result is {
+        product: ProductCatalogItem;
+        index: number;
+        score: number;
+      } => result.score !== null,
+    )
+    .sort((left, right) => left.score - right.score || left.index - right.index)
+    .map(({ product }) => product);
+}
+
+export function matchesSearchText(value: string, searchText: string) {
+  const query = normalizeSearchText(searchText);
+  return query !== "" && getTextSearchScore(value, query) !== null;
+}
+
 export function filterProducts(
   products: ProductCatalogItem[],
   filters: ProductFilters = {},
 ) {
-  const search = filters.search?.trim().toLocaleLowerCase();
+  const search = filters.search?.trim();
 
   return products.filter(
     (product) =>
@@ -71,10 +102,106 @@ export function filterProducts(
         filters.countries.includes(product.country)) &&
       (filters.minPrice === undefined || product.price >= filters.minPrice) &&
       (filters.maxPrice === undefined || product.price <= filters.maxPrice) &&
-      (!search ||
-        product.name.toLocaleLowerCase().includes(search) ||
-        product.platform.toLocaleLowerCase().includes(search)),
+      (!search || getProductSearchScore(product, search) !== null),
   );
+}
+
+function getProductSearchScore(
+  product: ProductCatalogItem,
+  searchText: string,
+) {
+  return getTextSearchScore(
+    `${product.name} ${product.platform} ${product.productType}`,
+    searchText,
+  );
+}
+
+function getTextSearchScore(value: string, searchText: string) {
+  const text = normalizeSearchText(value);
+  const query = normalizeSearchText(searchText);
+  if (!query) return null;
+  if (text.includes(query)) return 0;
+
+  const textWords = text.split(" ").filter(Boolean);
+  const queryWords = query.split(" ").filter(Boolean);
+  let score = 0;
+
+  for (const queryWord of queryWords) {
+    let bestScore = Number.POSITIVE_INFINITY;
+    for (const textWord of textWords) {
+      if (textWord.includes(queryWord)) {
+        bestScore = 0;
+        break;
+      }
+
+      if (queryWord.length < 3) continue;
+
+      const distance = getEditDistance(queryWord, textWord);
+      const maxDistance = Math.min(
+        2,
+        Math.max(1, Math.floor(queryWord.length / 4)),
+      );
+      if (distance <= maxDistance) {
+        bestScore = Math.min(bestScore, distance + 1);
+      }
+    }
+
+    if (!Number.isFinite(bestScore)) return null;
+    score += bestScore;
+  }
+
+  return score;
+}
+
+function normalizeSearchText(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("lt-LT")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+function getEditDistance(left: string, right: string) {
+  if (left === right) return 0;
+
+  if (left.length === right.length) {
+    const mismatches: number[] = [];
+    for (let index = 0; index < left.length; index += 1) {
+      if (left[index] !== right[index]) mismatches.push(index);
+    }
+
+    if (
+      mismatches.length === 2 &&
+      mismatches[1] === mismatches[0] + 1 &&
+      left[mismatches[0]] === right[mismatches[1]] &&
+      left[mismatches[1]] === right[mismatches[0]]
+    ) {
+      return 1;
+    }
+  }
+
+  let previousRow = Array.from(
+    { length: right.length + 1 },
+    (_, index) => index,
+  );
+
+  for (let leftIndex = 0; leftIndex < left.length; leftIndex += 1) {
+    const currentRow = [leftIndex + 1];
+    for (let rightIndex = 0; rightIndex < right.length; rightIndex += 1) {
+      currentRow.push(
+        Math.min(
+          currentRow[rightIndex] + 1,
+          previousRow[rightIndex + 1] + 1,
+          previousRow[rightIndex] +
+            (left[leftIndex] === right[rightIndex] ? 0 : 1),
+        ),
+      );
+    }
+    previousRow = currentRow;
+  }
+
+  return previousRow[right.length];
 }
 
 export function sortProducts(

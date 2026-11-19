@@ -83,6 +83,7 @@ export default function ShopPage() {
     () => searchParams.getAll("type").filter(isProductType),
     [searchParams],
   );
+  const searchQuery = searchParams.get("q")?.trim() ?? "";
   const isPopular = searchParams.get("popular") === "true";
   const isRecommended = searchParams.get("recommended") === "true";
   const [operatingSystems, setOperatingSystems] = useState<
@@ -108,6 +109,7 @@ export default function ShopPage() {
       filterProducts(catalog, {
         isPopular: isPopular ? true : undefined,
         isRecommended: isRecommended ? true : undefined,
+        search: searchQuery || undefined,
         countries: country ? [country] : undefined,
         productTypes,
         operatingSystems,
@@ -133,6 +135,7 @@ export default function ShopPage() {
       platforms,
       productTypes,
       regions,
+      searchQuery,
     ],
   );
   const sortedProducts = useMemo(
@@ -171,6 +174,12 @@ export default function ShopPage() {
     product.regions,
   );
   const activeFilters: { label: string; clear: () => void }[] = [];
+  if (searchQuery) {
+    activeFilters.push({
+      label: `Paieška: ${searchQuery}`,
+      clear: () => updateSearchQuery(""),
+    });
+  }
   if (isPopular) {
     activeFilters.push({
       label: "Populiariausi",
@@ -243,6 +252,7 @@ export default function ShopPage() {
     platforms,
     productTypes,
     regions,
+    searchQuery,
     sortOption,
   ]);
 
@@ -258,6 +268,7 @@ export default function ShopPage() {
         next.delete("popular");
         next.delete("recommended");
         next.delete("type");
+        next.delete("q");
         return next;
       },
       { replace: true, preventScrollReset: true },
@@ -279,6 +290,21 @@ export default function ShopPage() {
           next.set(name, "true");
         } else {
           next.delete(name);
+        }
+        return next;
+      },
+      { replace: true, preventScrollReset: true },
+    );
+  }
+
+  function updateSearchQuery(query: string) {
+    setSearchParams(
+      (current) => {
+        const next = new URLSearchParams(current);
+        if (query) {
+          next.set("q", query);
+        } else {
+          next.delete("q");
         }
         return next;
       },
@@ -314,6 +340,7 @@ export default function ShopPage() {
   const showGenres =
     productTypes.length === 0 || productTypes.includes("Žaidimai");
   const hasActiveFilters =
+    Boolean(searchQuery) ||
     isPopular ||
     isRecommended ||
     Boolean(country) ||
