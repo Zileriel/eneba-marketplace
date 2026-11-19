@@ -14,7 +14,7 @@
 - [x] **Footer**
   - Implement the website footer.
 
-- [ ] **Shop Page**
+- [x] **Shop Page**
   - Implement the main shop page.
   - Add product sorting.
   - Add product filtering.

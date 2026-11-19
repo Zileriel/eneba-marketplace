@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Link } from "react-router";
 import { ProductCard, ProductCardSkeleton } from "./product-card";
 import type { ProductCatalogItem } from "../../lib/products/products";
 import { useStaleWhileRevalidate } from "../../lib/cache/swr";
@@ -10,6 +11,7 @@ const MOBILE_PRODUCT_LIMIT = 10;
 type ProductSectionProps = {
   title: string;
   cacheKey: string;
+  viewAllTo: string;
   loadProducts: () => Promise<ProductCatalogItem[]>;
   loadingMessage?: string;
   errorMessage?: string;
@@ -19,6 +21,7 @@ type ProductSectionProps = {
 export function ProductSection({
   title,
   cacheKey,
+  viewAllTo,
   loadProducts: fetchProducts,
   loadingMessage = "Įkeliami produktai...",
   errorMessage = "Nepavyko įkelti produktų.",
@@ -276,9 +279,9 @@ export function ProductSection({
             </div>
           )
         ) : null}
-        <button className="product-section__view-all" type="button">
+        <Link className="product-section__view-all" to={viewAllTo}>
           Peržiūrėti viską
-        </button>
+        </Link>
       </div>
     </section>
   );
