@@ -79,7 +79,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addToCart = useCallback((productId: string) => {
     setItems((currentItems) => {
-      const existing = currentItems.find((item) => item.productId === productId);
+      const existing = currentItems.find(
+        (item) => item.productId === productId,
+      );
       if (!existing) {
         return [...currentItems, { productId, quantity: 1 }];
       }
@@ -118,7 +120,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
     );
   }, []);
 
-  const clearCart = useCallback(() => setItems([]), []);
+  const clearCart = useCallback(() => {
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
+    } catch (cause) {
+      console.error("Could not clear the saved shopping cart.", cause);
+    }
+    setItems([]);
+  }, []);
   const openCart = useCallback(() => {
     setAddedProductId(null);
     setIsCartOpen(true);
