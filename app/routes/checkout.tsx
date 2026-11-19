@@ -127,7 +127,10 @@ export async function action({ request }: Route.ActionArgs) {
   const paymentMethod = formData.get("paymentMethod");
   if (!items) {
     return data(
-      { error: "Krepšelio duomenys netinkami. Grįžkite į krepšelį ir bandykite dar kartą." },
+      {
+        error:
+          "Krepšelio duomenys netinkami. Grįžkite į krepšelį ir bandykite dar kartą.",
+      },
       { status: 400 },
     );
   }
@@ -173,7 +176,10 @@ export async function action({ request }: Route.ActionArgs) {
   const checkoutProducts = products.filter((product) => product !== null);
   if (checkoutProducts.length !== items.length) {
     return data(
-      { error: "Vienas ar daugiau produktų nebepasiekiami. Atnaujinkite krepšelį." },
+      {
+        error:
+          "Vienas ar daugiau produktų nebepasiekiami. Atnaujinkite krepšelį.",
+      },
       { status: 400 },
     );
   }
@@ -227,7 +233,10 @@ export async function action({ request }: Route.ActionArgs) {
   } catch (cause) {
     console.error("Could not create a Stripe test Checkout session.", cause);
     return data(
-      { error: "Nepavyko pradėti mokėjimo. Patikrinkite krepšelį ir bandykite dar kartą." },
+      {
+        error:
+          "Nepavyko pradėti mokėjimo. Patikrinkite krepšelį ir bandykite dar kartą.",
+      },
       { status: 502 },
     );
   }
@@ -286,7 +295,10 @@ export default function CheckoutPage() {
     }
   }
 
-  if (authState.status === "loading" || authState.status === "unauthenticated") {
+  if (
+    authState.status === "loading" ||
+    authState.status === "unauthenticated"
+  ) {
     return (
       <main className="checkout-page">
         <CheckoutHeader activeStep="payment" />
@@ -339,7 +351,10 @@ export default function CheckoutPage() {
             aria-labelledby="checkout-methods-title"
             className="checkout-page__items checkout-page__methods"
           >
-            <h2 className="checkout-page__visually-hidden" id="checkout-methods-title">
+            <h2
+              className="checkout-page__visually-hidden"
+              id="checkout-methods-title"
+            >
               Mokėjimo būdas
             </h2>
             <fieldset className="payment-methods">
@@ -386,7 +401,10 @@ export default function CheckoutPage() {
             aria-labelledby="checkout-summary-title"
             className="checkout-page__summary"
           >
-            <h2 className="checkout-page__visually-hidden" id="checkout-summary-title">
+            <h2
+              className="checkout-page__visually-hidden"
+              id="checkout-summary-title"
+            >
               Pirkinių suvestinė
             </h2>
             <div className="checkout-page__product-list">
@@ -437,7 +455,10 @@ export default function CheckoutPage() {
               <strong>{formatEuro(total)}</strong>
             </p>
             {hasUnavailableProduct && (
-              <p className="checkout-message checkout-message--error" role="alert">
+              <p
+                className="checkout-message checkout-message--error"
+                role="alert"
+              >
                 Pašalinkite nepasiekiamus produktus iš krepšelio.
               </p>
             )}
@@ -474,7 +495,9 @@ export default function CheckoutPage() {
   );
 }
 
-function parseCheckoutItems(value: FormDataEntryValue | null): CartItem[] | null {
+function parseCheckoutItems(
+  value: FormDataEntryValue | null,
+): CartItem[] | null {
   if (typeof value !== "string" || value.length > 10_000) return null;
 
   try {

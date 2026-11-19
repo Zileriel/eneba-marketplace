@@ -6,7 +6,7 @@ import {
   type DocumentData,
   type Firestore,
 } from "firebase-admin/firestore";
-import { isCheckoutSessionId } from "../checkout/stripe.server";
+import { isCheckoutSessionId } from "../checkout/stripe-utils";
 
 const ADMIN_APP_NAME = "eneba-private-product-keys";
 
