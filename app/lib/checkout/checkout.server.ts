@@ -1,4 +1,3 @@
-import Stripe from "stripe";
 import { parseProductCatalog } from "../products/product-parser";
 import type { ProductCatalogItem } from "../products/products";
 import type { CartItem } from "../cart/cart-context";
@@ -7,22 +6,6 @@ export class CheckoutConfigurationError extends Error {}
 export class CheckoutCatalogError extends Error {}
 
 type FirestoreValue = Record<string, unknown>;
-
-export function getStripeTestClient() {
-  const secretKey = process.env.STRIPE_SECRET_KEY?.trim();
-  if (!secretKey) {
-    throw new CheckoutConfigurationError(
-      "Stripe test mode is not configured. Set STRIPE_SECRET_KEY to a test key.",
-    );
-  }
-  if (!secretKey.startsWith("sk_test_")) {
-    throw new CheckoutConfigurationError(
-      "Checkout only accepts Stripe test-mode secret keys (sk_test_).",
-    );
-  }
-
-  return new Stripe(secretKey);
-}
 
 export async function loadCheckoutProducts(items: CartItem[]) {
   return Promise.all(items.map(({ productId }) => loadCheckoutProduct(productId)));

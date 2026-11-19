@@ -21,12 +21,16 @@ import {
   CheckoutCatalogError,
   CheckoutConfigurationError,
   getCheckoutOrigin,
-  getStripeTestClient,
   loadCheckoutProducts,
 } from "../lib/checkout/checkout.server";
 import {
+  getStripeClient,
+  StripeConfigurationError,
+} from "../lib/checkout/stripe.server";
+import {
   FirebaseAdminConfigurationError,
   FirebaseIdTokenError,
+  getAvailableKeyCounts,
   verifyFirebaseIdToken,
 } from "../lib/firebase/firebase-admin.server";
 import { authPageUrl } from "../lib/auth/redirect";
@@ -89,6 +93,9 @@ export function meta({}: Route.MetaArgs) {
   return [{ title: "Apmokėjimas | Eneba" }];
 }
 
+const CHECKOUT_UNAVAILABLE_ERROR =
+  "Apmokėjimas laikinai nepasiekiamas. Bandykite vėliau.";
+
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
   const rawIdToken = formData.get("firebaseIdToken");
@@ -109,22 +116,14 @@ export async function action({ request }: Route.ActionArgs) {
         { status: 401 },
       );
     }
-    if (cause instanceof FirebaseAdminConfigurationError) {
-      console.error("Could not verify the checkout user's identity.", cause);
-      return data(
-        { error: "Nepavyko patvirtinti paskyros. Bandykite dar kartą." },
-        { status: 503 },
-      );
-    }
     console.error("Could not verify the checkout user's identity.", cause);
     return data(
       { error: "Nepavyko patvirtinti paskyros. Bandykite dar kartą." },
-      { status: 502 },
+      { status: 503 },
     );
   }
 
-  const rawItems = formData.get("items");
-  const items = parseCheckoutItems(rawItems);
+  const items = parseCheckoutItems(formData.get("items"));
   const paymentMethod = formData.get("paymentMethod");
   if (!items) {
     return data(
@@ -140,57 +139,70 @@ export async function action({ request }: Route.ActionArgs) {
   }
 
   let products;
+  let keyCounts;
   let stripe;
   let origin;
   try {
-    products = await loadCheckoutProducts(items);
-    if (products.some((product) => product === null)) {
-      return data(
-        { error: "Vienas ar daugiau produktų nebepasiekiami. Atnaujinkite krepšelį." },
-        { status: 400 },
-      );
-    }
-    stripe = getStripeTestClient();
+    stripe = getStripeClient();
     origin = getCheckoutOrigin(request.url);
+    [products, keyCounts] = await Promise.all([
+      loadCheckoutProducts(items),
+      getAvailableKeyCounts(items.map(({ productId }) => productId)),
+    ]);
   } catch (cause) {
-    if (cause instanceof CheckoutConfigurationError) {
+    if (
+      cause instanceof CheckoutConfigurationError ||
+      cause instanceof StripeConfigurationError ||
+      cause instanceof FirebaseAdminConfigurationError
+    ) {
       console.error("Checkout configuration is incomplete.", cause);
-      return data({ error: cause.message }, { status: 503 });
+      return data({ error: CHECKOUT_UNAVAILABLE_ERROR }, { status: 503 });
     }
-    if (cause instanceof CheckoutCatalogError) {
-      console.error("Could not validate checkout products.", cause);
-      return data(
-        { error: "Nepavyko patvirtinti produktų kainų. Bandykite dar kartą." },
-        { status: 502 },
-      );
-    }
-    console.error("Could not load products for checkout.", cause);
+    console.error("Could not validate the checkout cart.", cause);
     return data(
-      { error: "Nepavyko patvirtinti krepšelio. Bandykite dar kartą." },
+      {
+        error:
+          cause instanceof CheckoutCatalogError
+            ? "Nepavyko patvirtinti produktų kainų. Bandykite dar kartą."
+            : "Nepavyko patvirtinti krepšelio. Bandykite dar kartą.",
+      },
       { status: 502 },
     );
   }
 
-  try {
-    const metadata: Record<string, string> = {
-      firebaseUserId,
-      selectedPaymentMethod: paymentMethod,
-    };
-    items.forEach((item, index) => {
-      metadata[`cartItem_${index}`] = JSON.stringify(item);
-    });
+  const checkoutProducts = products.filter((product) => product !== null);
+  if (checkoutProducts.length !== items.length) {
+    return data(
+      { error: "Vienas ar daugiau produktų nebepasiekiami. Atnaujinkite krepšelį." },
+      { status: 400 },
+    );
+  }
+  const outOfStockIndex = items.findIndex(
+    ({ productId, quantity }) => (keyCounts.get(productId) ?? 0) < quantity,
+  );
+  if (outOfStockIndex !== -1) {
+    const available = keyCounts.get(items[outOfStockIndex].productId) ?? 0;
+    const name = checkoutProducts[outOfStockIndex].name;
+    return data(
+      {
+        error:
+          available === 0
+            ? `Prekės „${name}“ šiuo metu nėra sandėlyje.`
+            : `Prekės „${name}“ sandėlyje liko tik ${available} vnt. Sumažinkite kiekį.`,
+      },
+      { status: 409 },
+    );
+  }
 
+  try {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       allowed_payment_method_types: ["card"],
       managed_payments: { enabled: false },
       client_reference_id: firebaseUserId,
-      metadata,
+      metadata: { selectedPaymentMethod: paymentMethod },
       line_items: items.map((item, index) => {
-        const product = products[index];
-        if (!product) {
-          throw new Error("Validated checkout product is missing.");
-        }
+        const product = checkoutProducts[index];
         return {
           quantity: item.quantity,
           price_data: {

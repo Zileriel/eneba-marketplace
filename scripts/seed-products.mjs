@@ -1,5 +1,10 @@
 import { readFile } from "node:fs/promises";
+import { FieldValue } from "firebase-admin/firestore";
 import { db } from "./firebase-admin.mjs";
+import {
+  addKeysToInventory,
+  countAvailableKeys,
+} from "./product-key-inventory.mjs";
 
 const products = JSON.parse(
   await readFile(new URL("../data/products.json", import.meta.url), "utf8"),
@@ -22,14 +27,19 @@ if (ids.some((id) => typeof id !== "string" || id.length === 0)) {
 if (new Set(ids).size !== ids.length) {
   throw new Error("Product IDs in data/products.json must be unique.");
 }
-if (
-  products.some(
-    ({ id }) =>
-      typeof productKeys[id] !== "string" || !productKeys[id].trim(),
-  )
-) {
+
+const keysByProduct = new Map(
+  ids.map((id) => {
+    const value = productKeys[id];
+    const keys = (Array.isArray(value) ? value : [value]).filter(
+      (key) => typeof key === "string" && key.trim(),
+    );
+    return [id, keys];
+  }),
+);
+if ([...keysByProduct.values()].some((keys) => keys.length === 0)) {
   throw new Error(
-    "Every product needs a non-empty key in data/product-keys.local.json.",
+    "Every product needs at least one non-empty key in data/product-keys.local.json.",
   );
 }
 
@@ -44,14 +54,16 @@ if (
   !hasSequentialOrders(recommendedProducts, "recommendedOrder") ||
   !hasSequentialOrders(popularProducts, "popularOrder")
 ) {
-  throw new Error("Product recommendation and popularity ranks must be sequential.");
+  throw new Error(
+    "Product recommendation and popularity ranks must be sequential.",
+  );
 }
 
 const existingSnapshot = await db.collection("products").get();
 const demoProducts = existingSnapshot.docs.filter(
   (document) => document.get("isDemo") === true,
 );
-const writeCount = demoProducts.length * 2 + products.length * 2;
+const writeCount = demoProducts.length + products.length * 2;
 if (writeCount > 500) {
   throw new Error(
     `Cannot atomically seed ${products.length} products and delete ${demoProducts.length} demos: Firestore batches are limited to 500 writes.`,
@@ -61,18 +73,30 @@ if (writeCount > 500) {
 const batch = db.batch();
 for (const demoProduct of demoProducts) {
   batch.delete(demoProduct.ref);
-  batch.delete(db.collection("product_keys").doc(demoProduct.id));
 }
 
 for (const { id, ...product } of products) {
   batch.set(db.collection("products").doc(id), product);
-  batch.set(db.collection("product_keys").doc(id), {
-    productId: id,
-    productKey: productKeys[id],
-  });
+  batch.set(
+    db.collection("product_keys").doc(id),
+    { productId: id, productKey: FieldValue.delete() },
+    { merge: true },
+  );
 }
 
 await batch.commit();
+
+for (const demoProduct of demoProducts) {
+  await db.recursiveDelete(db.collection("product_keys").doc(demoProduct.id));
+}
+
+let addedKeyCount = 0;
+for (const [id, keys] of keysByProduct) {
+  addedKeyCount += await addKeysToInventory(db, id, keys);
+}
+const availableCounts = await Promise.all(
+  ids.map((id) => countAvailableKeys(db, id)),
+);
 
 const [verificationSnapshot, keySnapshot] = await Promise.all([
   db.collection("products").get(),
@@ -96,6 +120,7 @@ if (
   seededDocuments.length !== products.length ||
   seededKeys.length !== products.length ||
   publicKeyLeak ||
+  availableCounts.some((count) => count === 0) ||
   remainingDemoProducts.length !== 0 ||
   seededDocuments.filter((document) => document.get("isRecommended") === true)
     .length !== recommendedProducts.length ||
@@ -106,7 +131,7 @@ if (
 }
 
 console.log(
-  `Removed ${demoProducts.length} demo products and seeded ${products.length} catalog products with private keys (${recommendedProducts.length} recommended, ${popularProducts.length} popular).`,
+  `Removed ${demoProducts.length} demo products and seeded ${products.length} catalog products (${recommendedProducts.length} recommended, ${popularProducts.length} popular). Added ${addedKeyCount} new keys; ${availableCounts.reduce((total, count) => total + count, 0)} keys are available.`,
 );
 
 function hasSequentialOrders(products, orderField) {

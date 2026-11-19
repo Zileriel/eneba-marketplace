@@ -10,7 +10,7 @@ service cloud.firestore {
       allow read: if true;
     }
 
-    match /product_keys/{productId} {
+    match /product_keys/{document=**} {
       allow read, write: if false;
     }
 

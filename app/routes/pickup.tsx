@@ -1,19 +1,30 @@
 import { Check, Copy } from "lucide-react";
 import { useEffect, useState } from "react";
-import { data, Link } from "react-router";
+import {
+  data,
+  Link,
+  useFetcher,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import type { Route } from "./+types/pickup";
 import {
-  CheckoutConfigurationError,
-  getStripeTestClient,
-} from "../lib/checkout/checkout.server";
+  CheckoutSessionError,
+  getCheckoutSessionDetails,
+  StripeConfigurationError,
+} from "../lib/checkout/stripe.server";
 import {
-  getProductKeys,
-  savePaidOrder,
-  ProductKeyConfigurationError,
+  FirebaseAdminConfigurationError,
+  FirebaseIdTokenError,
+  fulfilPaidOrder,
   ProductKeyInventoryError,
+  verifyFirebaseIdToken,
 } from "../lib/firebase/firebase-admin.server";
-import { formatEuro } from "../utils/currency";
+import { isCheckoutSessionId } from "../lib/checkout/stripe.server";
+import { authPageUrl } from "../lib/auth/redirect";
+import { useAuthUser } from "../lib/auth/use-auth-user";
 import { useCart } from "../lib/cart/cart-context";
+import { formatEuro } from "../utils/currency";
 
 const PAYMENT_METHOD_LABELS: Record<string, string> = {
   wallet: "„Eneba“ piniginė",
@@ -29,163 +40,222 @@ const PAYMENT_METHOD_LABELS: Record<string, string> = {
 type ReceiptItem = {
   name: string;
   quantity: number;
-  productKey: string | null;
+  productKeys: string[];
 };
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Prekių atsiėmimas | Eneba" }];
 }
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const sessionId = new URL(request.url).searchParams.get("session_id");
-  if (!sessionId || !/^cs_test_[a-zA-Z0-9]+$/.test(sessionId)) {
-    throw new Response("Neteisingas Stripe Checkout sesijos ID.", {
-      status: 400,
-    });
+function pickupError(message: string, status: number) {
+  return data({ status: "error" as const, message }, { status });
+}
+
+export async function action({ request }: Route.ActionArgs) {
+  const formData = await request.formData();
+  const sessionId = formData.get("sessionId");
+  if (!isCheckoutSessionId(sessionId)) {
+    return pickupError("Neteisingas mokėjimo sesijos ID.", 400);
+  }
+
+  const idToken = formData.get("firebaseIdToken");
+  if (typeof idToken !== "string" || !idToken.trim()) {
+    return pickupError("Prisijunkite, kad atsiimtumėte prekes.", 401);
+  }
+
+  let userId: string;
+  try {
+    userId = await verifyFirebaseIdToken(idToken);
+  } catch (cause) {
+    if (cause instanceof FirebaseIdTokenError) {
+      return pickupError(
+        "Prisijungimo sesija nebegalioja. Prisijunkite dar kartą.",
+        401,
+      );
+    }
+    console.error("Could not verify the pickup user's identity.", cause);
+    return pickupError(
+      "Nepavyko patvirtinti paskyros. Bandykite dar kartą.",
+      503,
+    );
   }
 
   try {
-    const stripe = getStripeTestClient();
-    const session = await stripe.checkout.sessions.retrieve(sessionId);
-    if (session.livemode) {
-      throw new Response(
-        "Šiame puslapyje rodomi tik Stripe testinio režimo mokėjimai.",
-        { status: 400 },
+    const checkout = await getCheckoutSessionDetails(sessionId);
+    if (!checkout.userId || checkout.userId !== userId) {
+      return pickupError(
+        "Šis užsakymas priklauso kitai paskyrai. Prisijunkite su paskyra, kuria apmokėjote.",
+        403,
       );
     }
 
-    const lineItems = await stripe.checkout.sessions.listLineItems(sessionId, {
-      limit: 100,
-    });
-    const isPaid =
-      session.status === "complete" && session.payment_status === "paid";
-    const cartItems = parseSessionCartItems(session.metadata);
-    let productKeys = new Map<string, string>();
-    let orderHistorySaveFailed = false;
+    const selectedMethod =
+      checkout.selectedPaymentMethod &&
+      PAYMENT_METHOD_LABELS[checkout.selectedPaymentMethod]
+        ? PAYMENT_METHOD_LABELS[checkout.selectedPaymentMethod]
+        : null;
+    const total =
+      checkout.currency === "eur" && checkout.amountTotal !== null
+        ? checkout.amountTotal / 100
+        : null;
 
-    if (isPaid && cartItems.length > 0) {
-      if (cartItems.length !== lineItems.data.length) {
-        throw new ProductKeyInventoryError(
-          "The paid checkout items do not match the saved order.",
-        );
-      }
-      const firebaseUserId = session.metadata?.firebaseUserId;
-      if (
-        firebaseUserId &&
-        session.client_reference_id === firebaseUserId &&
-        session.amount_total !== null &&
-        session.currency === "eur"
-      ) {
-        try {
-          await savePaidOrder({
-            id: session.id,
-            userId: firebaseUserId,
-            createdAt: session.created * 1000,
-            amountTotal: session.amount_total,
-            currency: session.currency,
-            selectedPaymentMethod:
-              session.metadata?.selectedPaymentMethod ?? null,
-            items: lineItems.data.map((lineItem, index) => ({
-              productId: cartItems[index].productId,
-              name: lineItem.description || "Skaitmeninė prekė",
-              quantity: cartItems[index].quantity,
-            })),
-          });
-        } catch (cause) {
-          console.error("Could not save the paid order history.", cause);
-          orderHistorySaveFailed = true;
-        }
-      } else if (firebaseUserId || session.client_reference_id) {
-        console.error(
-          "The paid order could not be associated with its Firebase user.",
-          { sessionId: session.id },
-        );
-        orderHistorySaveFailed = true;
-      }
-      productKeys = await getProductKeys(
-        cartItems.map((item) => item.productId),
-      );
-    }
-
-    const items: ReceiptItem[] = lineItems.data.map((lineItem, index) => {
-      const cartItem = cartItems[index];
+    if (!checkout.isPaid) {
       return {
-        name: lineItem.description || "Skaitmeninė prekė",
-        quantity: cartItem?.quantity ?? lineItem.quantity ?? 1,
-        productKey:
-          isPaid && cartItem
-            ? productKeys.get(cartItem.productId) ?? null
-            : null,
+        status: "pending" as const,
+        selectedMethod,
+        total,
+        items: checkout.items.map<ReceiptItem>(({ name, quantity }) => ({
+          name,
+          quantity,
+          productKeys: [],
+        })),
       };
+    }
+
+    if (checkout.amountTotal === null || checkout.currency === null) {
+      throw new CheckoutSessionError("The paid session has no total.");
+    }
+    const order = await fulfilPaidOrder({
+      id: checkout.id,
+      userId,
+      createdAt: checkout.createdAt,
+      amountTotal: checkout.amountTotal,
+      currency: checkout.currency,
+      selectedPaymentMethod: checkout.selectedPaymentMethod,
+      items: checkout.items,
     });
 
-    const selectedMethod = session.metadata?.selectedPaymentMethod;
     return {
-      status: isPaid ? ("paid" as const) : ("pending" as const),
-      orderHistorySaveFailed,
-      total:
-        session.currency === "eur" && session.amount_total !== null
-          ? session.amount_total / 100
-          : null,
-      items,
-      selectedMethod:
-        selectedMethod && PAYMENT_METHOD_LABELS[selectedMethod]
-          ? PAYMENT_METHOD_LABELS[selectedMethod]
-          : null,
+      status: "paid" as const,
+      selectedMethod,
+      total,
+      items: order.items.map<ReceiptItem>(
+        ({ name, quantity, productKeys }) => ({
+          name,
+          quantity,
+          productKeys,
+        }),
+      ),
     };
   } catch (cause) {
-    if (cause instanceof Response) throw cause;
+    console.error("Could not load the paid product delivery.", cause);
     if (
-      cause instanceof CheckoutConfigurationError ||
-      cause instanceof ProductKeyConfigurationError
+      cause instanceof StripeConfigurationError ||
+      cause instanceof FirebaseAdminConfigurationError
     ) {
-      console.error("Could not load the paid product delivery.", cause);
-      return data(
-        {
-          status: "error" as const,
-          message:
-            "Prekių atsiėmimas dar nesukonfigūruotas. Susisiekite su pagalba.",
-        },
-        { status: 503 },
+      return pickupError(
+        "Prekių atsiėmimas laikinai nepasiekiamas. Bandykite vėliau.",
+        503,
       );
     }
     if (cause instanceof ProductKeyInventoryError) {
-      console.error("Could not load the paid product delivery.", cause);
-      return data(
-        {
-          status: "error" as const,
-          message:
-            "Nepavyko paruošti visų prekių kodų. Susisiekite su pagalba.",
-        },
-        { status: 503 },
+      return pickupError(
+        "Mokėjimas gautas, tačiau trūksta prekių kodų sandėlyje. Susisiekite su pagalba.",
+        409,
       );
     }
-    console.error("Could not verify the paid product delivery.", cause);
-    return data(
-      {
-        status: "error" as const,
-        message: "Nepavyko patikrinti mokėjimo. Bandykite dar kartą.",
-      },
-      { status: 502 },
+    return pickupError(
+      "Nepavyko patikrinti mokėjimo. Bandykite dar kartą.",
+      502,
     );
   }
 }
 
-export default function PickupPage({ loaderData }: Route.ComponentProps) {
+export default function PickupPage() {
+  const [searchParams] = useSearchParams();
+  const sessionId = searchParams.get("session_id");
+  const hasValidSessionId = isCheckoutSessionId(sessionId);
+  const authState = useAuthUser();
+  const navigate = useNavigate();
+  const fetcher = useFetcher<typeof action>();
   const { clearCart } = useCart();
-  const isPaid = loaderData.status === "paid";
+  const [retryCount, setRetryCount] = useState(0);
+  const [tokenError, setTokenError] = useState(false);
+  const user = authState.status === "authenticated" ? authState.user : null;
+  const result = fetcher.data;
+  const isPaid = result?.status === "paid";
+
+  useEffect(() => {
+    if (authState.status === "unauthenticated" && sessionId) {
+      void navigate(
+        authPageUrl(
+          "/login",
+          `/pickup?session_id=${encodeURIComponent(sessionId)}`,
+        ),
+        { replace: true },
+      );
+    }
+  }, [authState.status, navigate, sessionId]);
+
+  useEffect(() => {
+    if (!user || !sessionId || !hasValidSessionId) return;
+
+    let isCurrent = true;
+    setTokenError(false);
+    user
+      .getIdToken()
+      .then((firebaseIdToken) => {
+        if (!isCurrent) return;
+        void fetcher.submit({ sessionId, firebaseIdToken }, { method: "post" });
+      })
+      .catch((cause: unknown) => {
+        console.error("Could not prepare the authenticated pickup.", cause);
+        if (isCurrent) setTokenError(true);
+      });
+
+    return () => {
+      isCurrent = false;
+    };
+  }, [hasValidSessionId, retryCount, sessionId, user]);
 
   useEffect(() => {
     if (isPaid) clearCart();
   }, [clearCart, isPaid]);
 
-  if (loaderData.status === "error") {
+  const errorMessage = !hasValidSessionId
+    ? "Neteisingas mokėjimo sesijos ID."
+    : authState.status === "error"
+      ? "Nepavyko patikrinti paskyros. Atnaujinkite puslapį."
+      : tokenError
+        ? "Nepavyko patvirtinti prisijungimo. Bandykite dar kartą."
+        : fetcher.state === "idle" && result?.status === "error"
+          ? result.message
+          : null;
+
+  if (errorMessage) {
     return (
       <main className="checkout-result">
         <EnebaHomeLink />
         <section className="checkout-result__card" role="alert">
           <h1>Prekių atsiėmimas negalimas</h1>
-          <p>{loaderData.message}</p>
+          <p>{errorMessage}</p>
+          {hasValidSessionId && authState.status === "authenticated" && (
+            <button
+              className="cart-button cart-button--primary"
+              onClick={() => setRetryCount((count) => count + 1)}
+              type="button"
+            >
+              Bandykite dar kartą
+            </button>
+          )}
+        </section>
+      </main>
+    );
+  }
+
+  if (!result || result.status === "error" || fetcher.state !== "idle") {
+    return (
+      <main className="checkout-result">
+        <EnebaHomeLink />
+        <section className="checkout-result__card" role="status">
+          <div aria-hidden="true" className="checkout-result__mark">
+            …
+          </div>
+          <h1>
+            {authState.status === "authenticated"
+              ? "Tikrinamas mokėjimas..."
+              : "Tikrinama paskyra..."}
+          </h1>
         </section>
       </main>
     );
@@ -201,53 +271,54 @@ export default function PickupPage({ loaderData }: Route.ComponentProps) {
         >
           {isPaid ? <Check /> : "…"}
         </div>
-        <h1>{isPaid ? "Mokėjimas patvirtintas" : "Mokėjimas nepatvirtintas"}</h1>
+        <h1>
+          {isPaid ? "Mokėjimas patvirtintas" : "Mokėjimas nepatvirtintas"}
+        </h1>
         <p>
           {isPaid
             ? "Jūsų skaitmeninės prekės paruoštos."
             : "Mokėjimas dar nepažymėtas kaip užbaigtas."}
         </p>
-        {isPaid && loaderData.selectedMethod && (
+        {isPaid && result.selectedMethod && (
           <p className="checkout-result__method">
-            Mokėjimo būdas: {loaderData.selectedMethod}.
+            Mokėjimo būdas: {result.selectedMethod}.
           </p>
         )}
-        {isPaid && loaderData.orderHistorySaveFailed && (
-          <p className="checkout-message checkout-message--error" role="alert">
-            Mokėjimas patvirtintas, tačiau nepavyko išsaugoti užsakymo
-            istorijoje. Atnaujinkite šį puslapį, kad bandytume dar kartą.
-          </p>
-        )}
-        {loaderData.items.length > 0 && (
+        {result.items.length > 0 && (
           <ul className="checkout-result__items">
-            {loaderData.items.map((item, index) => (
-              <li className="checkout-result__item" key={`${item.name}-${index}`}>
+            {result.items.map((item, index) => (
+              <li
+                className="checkout-result__item"
+                key={`${item.name}-${index}`}
+              >
                 <div className="checkout-result__item-heading">
                   <strong>{item.name}</strong>
                   <span>× {item.quantity}</span>
                 </div>
-                {item.productKey ? (
-                  <div className="checkout-result__key">
+                {item.productKeys.map((productKey, keyIndex) => (
+                  <div className="checkout-result__key" key={keyIndex}>
                     <div className="checkout-result__key-value">
-                      <span>Produkto kodas</span>
-                      <code>{item.productKey}</code>
+                      <span>
+                        Produkto kodas
+                        {item.productKeys.length > 1 ? ` ${keyIndex + 1}` : ""}
+                      </span>
+                      <code>{productKey}</code>
                     </div>
-                    <CopyProductKeyButton productKey={item.productKey} />
+                    <CopyProductKeyButton productKey={productKey} />
                   </div>
-                ) : (
-                  isPaid && (
-                    <p className="checkout-result__key-error" role="alert">
-                      Šios prekės kodas dar neparuoštas. Susisiekite su pagalba.
-                    </p>
-                  )
+                ))}
+                {isPaid && item.productKeys.length < item.quantity && (
+                  <p className="checkout-result__key-error" role="alert">
+                    Šios prekės kodas dar neparuoštas. Susisiekite su pagalba.
+                  </p>
                 )}
               </li>
             ))}
           </ul>
         )}
-        {loaderData.total !== null && (
+        {result.total !== null && (
           <p className="checkout-result__total">
-            Iš viso: <strong>{formatEuro(loaderData.total)}</strong>
+            Iš viso: <strong>{formatEuro(result.total)}</strong>
           </p>
         )}
         <Link className="cart-button cart-button--primary" to="/">
@@ -285,65 +356,15 @@ function CopyProductKeyButton({ productKey }: { productKey: string }) {
     <div className="checkout-result__copy">
       <button onClick={copyProductKey} type="button">
         {copyState === "copied" ? "Nukopijuota" : "Kopijuoti"}
-        {copyState === "copied" ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+        {copyState === "copied" ? (
+          <Check aria-hidden="true" />
+        ) : (
+          <Copy aria-hidden="true" />
+        )}
       </button>
       {copyState === "error" && (
         <span role="alert">Nepavyko nukopijuoti kodo.</span>
       )}
     </div>
-  );
-}
-
-function parseSessionCartItems(metadata: Record<string, string> | null) {
-  const metadataItems = Object.entries(metadata ?? {}).flatMap(
-    ([key, value]) => {
-      const match = /^cartItem_(\d+)$/.exec(key);
-      if (!match) return [];
-
-      let parsed: unknown;
-      try {
-        parsed = JSON.parse(value);
-      } catch (cause) {
-        throw new ProductKeyInventoryError(
-          "The paid checkout items have invalid metadata.",
-          { cause },
-        );
-      }
-      if (!isCartItem(parsed)) {
-        throw new ProductKeyInventoryError(
-          "The paid checkout items have invalid metadata.",
-        );
-      }
-      return [{ index: Number(match[1]), item: parsed }];
-    },
-  );
-
-  metadataItems.sort((left, right) => left.index - right.index);
-  const productIds = metadataItems.map(({ item }) => item.productId);
-  if (new Set(productIds).size !== productIds.length) {
-    throw new ProductKeyInventoryError(
-      "The paid checkout items contain duplicate product IDs.",
-    );
-  }
-
-  return metadataItems.map(({ item }) => item);
-}
-
-function isCartItem(value: unknown): value is {
-  productId: string;
-  quantity: number;
-} {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "productId" in value &&
-    typeof value.productId === "string" &&
-    value.productId.length > 0 &&
-    value.productId.length <= 128 &&
-    "quantity" in value &&
-    typeof value.quantity === "number" &&
-    Number.isInteger(value.quantity) &&
-    value.quantity > 0 &&
-    value.quantity <= 99
   );
 }
