@@ -13,5 +13,11 @@ service cloud.firestore {
     match /product_keys/{productId} {
       allow read, write: if false;
     }
+
+    match /orders/{orderId} {
+      allow get, list: if request.auth != null &&
+        request.auth.uid == resource.data.userId;
+      allow create, update, delete: if false;
+    }
   }
 }

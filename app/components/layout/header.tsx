@@ -6,6 +6,7 @@ import {
   useState,
 } from "react";
 import {
+  ClipboardList,
   LogOut,
   Search,
   ShoppingCart,
@@ -486,6 +487,14 @@ export function Header() {
                         </p>
                       </div>
                     </div>
+                    <Link
+                      className="account-profile-popover__orders"
+                      onClick={() => setIsProfileOpen(false)}
+                      to="/orders"
+                    >
+                      <ClipboardList aria-hidden="true" />
+                      <span>Užsakymų istorija</span>
+                    </Link>
                     {signOutError && (
                       <p
                         className="account-profile-popover__error"

@@ -1,5 +1,12 @@
-import { Form, useNavigation, useSearchParams } from "react-router";
-import { data, redirect } from "react-router";
+import { useEffect, useState, type FormEvent } from "react";
+import {
+  Link,
+  data,
+  redirect,
+  useFetcher,
+  useNavigate,
+  useSearchParams,
+} from "react-router";
 import type { Route } from "./+types/checkout";
 import {
   CartLineItem,
@@ -17,6 +24,13 @@ import {
   getStripeTestClient,
   loadCheckoutProducts,
 } from "../lib/checkout/checkout.server";
+import {
+  FirebaseAdminConfigurationError,
+  FirebaseIdTokenError,
+  verifyFirebaseIdToken,
+} from "../lib/firebase/firebase-admin.server";
+import { authPageUrl } from "../lib/auth/redirect";
+import { useAuthUser } from "../lib/auth/use-auth-user";
 
 const MAX_CART_QUANTITY = 99;
 const PAYMENT_METHODS = [
@@ -77,6 +91,38 @@ export function meta({}: Route.MetaArgs) {
 
 export async function action({ request }: Route.ActionArgs) {
   const formData = await request.formData();
+  const rawIdToken = formData.get("firebaseIdToken");
+  if (typeof rawIdToken !== "string" || !rawIdToken.trim()) {
+    return data(
+      { error: "Prisijunkite prie paskyros prieš tęsdami apmokėjimą." },
+      { status: 401 },
+    );
+  }
+
+  let firebaseUserId: string;
+  try {
+    firebaseUserId = await verifyFirebaseIdToken(rawIdToken);
+  } catch (cause) {
+    if (cause instanceof FirebaseIdTokenError) {
+      return data(
+        { error: "Prisijungimo sesija nebegalioja. Prisijunkite dar kartą." },
+        { status: 401 },
+      );
+    }
+    if (cause instanceof FirebaseAdminConfigurationError) {
+      console.error("Could not verify the checkout user's identity.", cause);
+      return data(
+        { error: "Nepavyko patvirtinti paskyros. Bandykite dar kartą." },
+        { status: 503 },
+      );
+    }
+    console.error("Could not verify the checkout user's identity.", cause);
+    return data(
+      { error: "Nepavyko patvirtinti paskyros. Bandykite dar kartą." },
+      { status: 502 },
+    );
+  }
+
   const rawItems = formData.get("items");
   const items = parseCheckoutItems(rawItems);
   const paymentMethod = formData.get("paymentMethod");
@@ -127,6 +173,7 @@ export async function action({ request }: Route.ActionArgs) {
 
   try {
     const metadata: Record<string, string> = {
+      firebaseUserId,
       selectedPaymentMethod: paymentMethod,
     };
     items.forEach((item, index) => {
@@ -137,6 +184,7 @@ export async function action({ request }: Route.ActionArgs) {
       mode: "payment",
       allowed_payment_method_types: ["card"],
       managed_payments: { enabled: false },
+      client_reference_id: firebaseUserId,
       metadata,
       line_items: items.map((item, index) => {
         const product = products[index];
@@ -173,12 +221,15 @@ export async function action({ request }: Route.ActionArgs) {
   }
 }
 
-export default function CheckoutPage({
-  actionData,
-}: Route.ComponentProps) {
+export default function CheckoutPage() {
   const { items, isHydrated, removeFromCart, setQuantity } = useCart();
   const { products, isLoading, error, retry } = useCartProducts(items);
+  const authState = useAuthUser();
+  const navigate = useNavigate();
+  const fetcher = useFetcher<typeof action>();
   const { total, hasUnavailableProduct } = getCartSummary(items, products);
+  const [isPreparingPayment, setIsPreparingPayment] = useState(false);
+  const [authSubmitError, setAuthSubmitError] = useState<string | null>(null);
   const cashback = items.reduce((amount, item) => {
     const product = products.get(item.productId);
     return (
@@ -188,15 +239,63 @@ export default function CheckoutPage({
         : 0)
     );
   }, 0);
-  const navigation = useNavigation();
   const [searchParams] = useSearchParams();
-  const isSubmitting = navigation.state === "submitting";
+  const isSubmitting = fetcher.state !== "idle" || isPreparingPayment;
   const canPay =
     isHydrated &&
     items.length > 0 &&
     !isLoading &&
     !error &&
     !hasUnavailableProduct;
+
+  useEffect(() => {
+    if (authState.status === "unauthenticated") {
+      void navigate(authPageUrl("/login", "/checkout"), { replace: true });
+    }
+  }, [authState.status, navigate]);
+
+  async function submitCheckout(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (authState.status !== "authenticated") return;
+
+    const formData = new FormData(event.currentTarget);
+    setIsPreparingPayment(true);
+    setAuthSubmitError(null);
+    try {
+      formData.set("firebaseIdToken", await authState.user.getIdToken());
+      fetcher.submit(formData, { method: "post" });
+    } catch (cause) {
+      console.error("Could not prepare authenticated checkout.", cause);
+      setAuthSubmitError(
+        "Nepavyko patvirtinti prisijungimo. Bandykite dar kartą.",
+      );
+    } finally {
+      setIsPreparingPayment(false);
+    }
+  }
+
+  if (authState.status === "loading" || authState.status === "unauthenticated") {
+    return (
+      <main className="checkout-page">
+        <CheckoutHeader activeStep="payment" />
+        <p className="checkout-message" role="status">
+          Tikrinama paskyra...
+        </p>
+      </main>
+    );
+  }
+
+  if (authState.status === "error") {
+    return (
+      <main className="checkout-page">
+        <CheckoutHeader activeStep="payment" />
+        <p className="checkout-message checkout-message--error" role="alert">
+          Nepavyko patikrinti paskyros. Atnaujinkite puslapį arba{" "}
+          <Link to="/login">prisijunkite iš naujo</Link>.
+        </p>
+      </main>
+    );
+  }
 
   return (
     <main className="checkout-page">
@@ -208,12 +307,21 @@ export default function CheckoutPage({
             Mokėjimas atšauktas. Krepšelis liko išsaugotas.
           </p>
         )}
-        {actionData?.error && (
+        {fetcher.data?.error && (
           <p className="checkout-message checkout-message--error" role="alert">
-            {actionData.error}
+            {fetcher.data.error}
           </p>
         )}
-        <Form className="checkout-page__layout" method="post">
+        {authSubmitError && (
+          <p className="checkout-message checkout-message--error" role="alert">
+            {authSubmitError}
+          </p>
+        )}
+        <fetcher.Form
+          className="checkout-page__layout"
+          method="post"
+          onSubmit={submitCheckout}
+        >
           <input name="items" type="hidden" value={JSON.stringify(items)} />
           <section
             aria-labelledby="checkout-methods-title"
@@ -348,7 +456,7 @@ export default function CheckoutPage({
               .
             </p>
           </aside>
-        </Form>
+        </fetcher.Form>
       </div>
     </main>
   );

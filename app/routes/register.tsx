@@ -1,11 +1,12 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { AuthShell } from "../components/layout/auth-shell";
 import { PasswordField } from "../components/input/password-field";
 import {
   getAuthErrorMessage,
   registerWithEmail,
 } from "../lib/auth/auth.client";
+import { authPageUrl, getSafeRedirectTo } from "../lib/auth/redirect";
 import type { Route } from "./+types/register";
 
 export function meta({}: Route.MetaArgs) {
@@ -14,6 +15,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Register() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = getSafeRedirectTo(searchParams.get("redirectTo"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [wantsOffers, setWantsOffers] = useState(false);
@@ -27,7 +30,7 @@ export default function Register() {
 
     try {
       await registerWithEmail(email.trim(), password);
-      await navigate("/");
+      await navigate(redirectTo);
     } catch (cause) {
       setError(getAuthErrorMessage(cause));
     } finally {
@@ -41,7 +44,7 @@ export default function Register() {
         <h2 id="auth-title">Registruotis</h2>
         <p className="auth-card__subtitle">
           Jau turite paskyrą?{" "}
-          <Link className="auth-link" to="/login">
+          <Link className="auth-link" to={authPageUrl("/login", redirectTo)}>
             Prisijunkite
           </Link>
         </p>

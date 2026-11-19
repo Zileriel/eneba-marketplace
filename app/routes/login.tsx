@@ -1,8 +1,9 @@
 import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { AuthShell } from "../components/layout/auth-shell";
 import { PasswordField } from "../components/input/password-field";
 import { getAuthErrorMessage, signInWithEmail } from "../lib/auth/auth.client";
+import { authPageUrl, getSafeRedirectTo } from "../lib/auth/redirect";
 import type { Route } from "./+types/login";
 
 export function meta({}: Route.MetaArgs) {
@@ -11,6 +12,8 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = getSafeRedirectTo(searchParams.get("redirectTo"));
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -23,7 +26,7 @@ export default function Login() {
 
     try {
       await signInWithEmail(email.trim(), password);
-      await navigate("/");
+      await navigate(redirectTo);
     } catch (cause) {
       setError(getAuthErrorMessage(cause));
     } finally {
@@ -37,7 +40,10 @@ export default function Login() {
         <h2 id="auth-title">Prisijungti</h2>
         <p className="auth-card__subtitle">
           Naujas vartotojas?{" "}
-          <Link className="auth-link" to="/register">
+          <Link
+            className="auth-link"
+            to={authPageUrl("/register", redirectTo)}
+          >
             Susikurk paskyrą
           </Link>
         </p>
@@ -77,7 +83,10 @@ export default function Login() {
           </button>
         </form>
         <p className="auth-card__footer">
-          <Link className="auth-link" to="/lost-password">
+          <Link
+            className="auth-link"
+            to={authPageUrl("/lost-password", redirectTo)}
+          >
             Pamiršote slaptažodį?
           </Link>
         </p>

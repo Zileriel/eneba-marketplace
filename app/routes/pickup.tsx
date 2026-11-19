@@ -8,6 +8,7 @@ import {
 } from "../lib/checkout/checkout.server";
 import {
   getProductKeys,
+  savePaidOrder,
   ProductKeyConfigurationError,
   ProductKeyInventoryError,
 } from "../lib/firebase/firebase-admin.server";
@@ -60,12 +61,46 @@ export async function loader({ request }: Route.LoaderArgs) {
       session.status === "complete" && session.payment_status === "paid";
     const cartItems = parseSessionCartItems(session.metadata);
     let productKeys = new Map<string, string>();
+    let orderHistorySaveFailed = false;
 
     if (isPaid && cartItems.length > 0) {
       if (cartItems.length !== lineItems.data.length) {
         throw new ProductKeyInventoryError(
           "The paid checkout items do not match the saved order.",
         );
+      }
+      const firebaseUserId = session.metadata?.firebaseUserId;
+      if (
+        firebaseUserId &&
+        session.client_reference_id === firebaseUserId &&
+        session.amount_total !== null &&
+        session.currency === "eur"
+      ) {
+        try {
+          await savePaidOrder({
+            id: session.id,
+            userId: firebaseUserId,
+            createdAt: session.created * 1000,
+            amountTotal: session.amount_total,
+            currency: session.currency,
+            selectedPaymentMethod:
+              session.metadata?.selectedPaymentMethod ?? null,
+            items: lineItems.data.map((lineItem, index) => ({
+              productId: cartItems[index].productId,
+              name: lineItem.description || "Skaitmeninė prekė",
+              quantity: cartItems[index].quantity,
+            })),
+          });
+        } catch (cause) {
+          console.error("Could not save the paid order history.", cause);
+          orderHistorySaveFailed = true;
+        }
+      } else if (firebaseUserId || session.client_reference_id) {
+        console.error(
+          "The paid order could not be associated with its Firebase user.",
+          { sessionId: session.id },
+        );
+        orderHistorySaveFailed = true;
       }
       productKeys = await getProductKeys(
         cartItems.map((item) => item.productId),
@@ -87,6 +122,7 @@ export async function loader({ request }: Route.LoaderArgs) {
     const selectedMethod = session.metadata?.selectedPaymentMethod;
     return {
       status: isPaid ? ("paid" as const) : ("pending" as const),
+      orderHistorySaveFailed,
       total:
         session.currency === "eur" && session.amount_total !== null
           ? session.amount_total / 100
@@ -174,6 +210,12 @@ export default function PickupPage({ loaderData }: Route.ComponentProps) {
         {isPaid && loaderData.selectedMethod && (
           <p className="checkout-result__method">
             Mokėjimo būdas: {loaderData.selectedMethod}.
+          </p>
+        )}
+        {isPaid && loaderData.orderHistorySaveFailed && (
+          <p className="checkout-message checkout-message--error" role="alert">
+            Mokėjimas patvirtintas, tačiau nepavyko išsaugoti užsakymo
+            istorijoje. Atnaujinkite šį puslapį, kad bandytume dar kartą.
           </p>
         )}
         {loaderData.items.length > 0 && (

@@ -1,10 +1,11 @@
 import { useState, type FormEvent } from "react";
-import { Link } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import { AuthShell } from "../components/layout/auth-shell";
 import {
   getAuthErrorMessage,
   sendPasswordReset,
 } from "../lib/auth/auth.client";
+import { authPageUrl, getSafeRedirectTo } from "../lib/auth/redirect";
 import type { Route } from "./+types/lost-password";
 
 export function meta({}: Route.MetaArgs) {
@@ -12,6 +13,8 @@ export function meta({}: Route.MetaArgs) {
 }
 
 export default function LostPassword() {
+  const [searchParams] = useSearchParams();
+  const redirectTo = getSafeRedirectTo(searchParams.get("redirectTo"));
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -77,7 +80,7 @@ export default function LostPassword() {
           </button>
         </form>
         <p className="auth-card__footer">
-          <Link className="auth-link" to="/login">
+          <Link className="auth-link" to={authPageUrl("/login", redirectTo)}>
             Grįžti į prisijungimą
           </Link>
         </p>
