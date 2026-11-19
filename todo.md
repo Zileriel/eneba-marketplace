@@ -1,20 +1,17 @@
 # TODO
 
-- [ ] **Authentication UI**
+- [x] **Authentication UI**
   - Display a loading state while checking the user's authentication status.
   - Show Login / Register buttons or the user's profile once the status is resolved.
   - User profile modal with logout button.
 
-- [ ] **Navigation Bar**
-  - Add an empty secondary navigation bar below the header.
-
 - [ ] **Category Carousel**
   - Implement a product category carousel.
 
-- [ ] **Popular Gift Cards Section**
+- [x] **Popular Gift Cards Section**
   - Add a section showcasing the most popular digital gift cards.
 
-- [ ] **Footer**
+- [x] **Footer**
   - Implement the website footer.
 
 - [ ] **Shop Page**

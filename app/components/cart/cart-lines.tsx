@@ -1,58 +1,50 @@
 import { Minus, Plus, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect } from "react";
 import { formatEuro } from "../../utils/currency";
 import { getProductById } from "../../lib/products/product-repository.client";
 import type { ProductCatalogItem } from "../../lib/products/products";
 import type { CartItem } from "../../lib/cart/cart-context";
+import { useStaleWhileRevalidate } from "../../lib/cache/swr";
 
 export function useCartProducts(items: CartItem[]) {
-  const [products, setProducts] = useState<Map<string, ProductCatalogItem | null>>(
-    () => new Map(),
+  const productIds = items
+    .map(({ productId }) => productId)
+    .sort()
+    .join("|");
+  const ids = productIds ? productIds.split("|") : [];
+
+  const loadProducts = useCallback(
+    () =>
+      Promise.all(
+        ids.map(async (id) => [id, await getProductById(id)] as const),
+      ),
+    [productIds],
   );
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const productIds = items.map(({ productId }) => productId).join("|");
+  const resource = useStaleWhileRevalidate(
+    `cart-products:${productIds}`,
+    loadProducts,
+    ids.length > 0,
+  );
+  const products = new Map(resource.data ?? []);
+  const error =
+    resource.error && resource.data === undefined
+      ? "Nepavyko įkelti krepšelio produktų."
+      : null;
 
   useEffect(() => {
-    let isCurrent = true;
-    const ids = productIds ? productIds.split("|") : [];
-
-    if (ids.length === 0) {
-      setProducts(new Map());
-      setError(null);
-      setIsLoading(false);
-      return () => {
-        isCurrent = false;
-      };
+    if (resource.error) {
+      console.error(
+        "Could not load products in the shopping cart.",
+        resource.error,
+      );
     }
-
-    setIsLoading(true);
-    setError(null);
-    Promise.all(
-      ids.map(async (id) => [id, await getProductById(id)] as const),
-    )
-      .then((entries) => {
-        if (isCurrent) setProducts(new Map(entries));
-      })
-      .catch((cause: unknown) => {
-        console.error("Could not load products in the shopping cart.", cause);
-        if (isCurrent) setError("Nepavyko įkelti krepšelio produktų.");
-      })
-      .finally(() => {
-        if (isCurrent) setIsLoading(false);
-      });
-
-    return () => {
-      isCurrent = false;
-    };
-  }, [productIds, retryCount]);
+  }, [resource.error]);
 
   return {
     products,
-    isLoading,
+    isLoading: ids.length > 0 && resource.isLoading,
     error,
-    retry: () => setRetryCount((count) => count + 1),
+    retry: resource.retry,
   };
 }
 
@@ -156,6 +148,27 @@ export function CartLineItem({
         {product.moneyBackPercent > 0 && (
           <p className="cart-line__cashback">grįžta: {formatEuro(moneyBack)}</p>
         )}
+      </div>
+    </article>
+  );
+}
+
+export function CartLineSkeleton({
+  variant,
+}: {
+  variant: "drawer" | "page" | "checkout";
+}) {
+  return (
+    <article
+      aria-hidden="true"
+      className={`cart-line cart-line--${variant} cart-line--skeleton`}
+    >
+      <div className="cart-line-skeleton__image" />
+      <div className="cart-line__details cart-line-skeleton__details">
+        <span className="cart-line-skeleton__line cart-line-skeleton__line--type" />
+        <span className="cart-line-skeleton__line cart-line-skeleton__line--name" />
+        <span className="cart-line-skeleton__line cart-line-skeleton__line--metadata" />
+        <span className="cart-line-skeleton__line cart-line-skeleton__line--price" />
       </div>
     </article>
   );

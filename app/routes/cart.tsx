@@ -1,6 +1,11 @@
 import { Link } from "react-router";
 import type { Route } from "./+types/cart";
-import { CartLineItem, getCartSummary, useCartProducts } from "../components/cart/cart-lines";
+import {
+  CartLineItem,
+  CartLineSkeleton,
+  getCartSummary,
+  useCartProducts,
+} from "../components/cart/cart-lines";
 import { CheckoutHeader } from "../components/layout/checkout-header";
 import { formatEuro } from "../utils/currency";
 import { useCart } from "../lib/cart/cart-context";
@@ -28,7 +33,14 @@ export default function CartPage() {
           <section aria-labelledby="cart-page-title" className="cart-page__items">
             <h1 id="cart-page-title">Mano krepšelis</h1>
             {!isHydrated || isLoading ? (
-              <p className="cart-message" role="status">Įkeliamas krepšelis...</p>
+              <div aria-label="Įkeliamas krepšelis" role="status">
+                {Array.from(
+                  { length: Math.max(1, Math.min(items.length, 3)) },
+                  (_, index) => (
+                    <CartLineSkeleton key={index} variant="page" />
+                  ),
+                )}
+              </div>
             ) : error ? (
               <div className="cart-message" role="alert">
                 <p>{error}</p>

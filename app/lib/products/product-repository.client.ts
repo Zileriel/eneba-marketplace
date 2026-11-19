@@ -47,25 +47,32 @@ export type ProductQueryOptions = {
   limit?: number;
 };
 
-const queryCache = new Map<string, Promise<ProductCatalogItem[]>>();
-const productCache = new Map<string, Promise<ProductCatalogItem | null>>();
+const queryRequests = new Map<string, Promise<ProductCatalogItem[]>>();
+const productRequests = new Map<string, Promise<ProductCatalogItem | null>>();
 
 export function getProducts(options: ProductQueryOptions = {}) {
   validateOptions(options);
   const cacheKey = createCacheKey(options);
-  const cachedProducts = queryCache.get(cacheKey);
+  const cachedProducts = queryRequests.get(cacheKey);
 
   if (cachedProducts) {
     return cachedProducts;
   }
 
   const request = loadProducts(options);
-  queryCache.set(cacheKey, request);
-  request.catch(() => {
-    if (queryCache.get(cacheKey) === request) {
-      queryCache.delete(cacheKey);
-    }
-  });
+  queryRequests.set(cacheKey, request);
+  void request.then(
+    () => {
+      if (queryRequests.get(cacheKey) === request) {
+        queryRequests.delete(cacheKey);
+      }
+    },
+    () => {
+      if (queryRequests.get(cacheKey) === request) {
+        queryRequests.delete(cacheKey);
+      }
+    },
+  );
   return request;
 }
 
@@ -74,18 +81,26 @@ export function getProductById(id: string) {
     throw new Error("A product ID is required.");
   }
 
-  const cachedProduct = productCache.get(id);
+  const cachedProduct = productRequests.get(id);
+
   if (cachedProduct) {
     return cachedProduct;
   }
 
   const request = loadProductById(id);
-  productCache.set(id, request);
-  request.catch(() => {
-    if (productCache.get(id) === request) {
-      productCache.delete(id);
-    }
-  });
+  productRequests.set(id, request);
+  void request.then(
+    () => {
+      if (productRequests.get(id) === request) {
+        productRequests.delete(id);
+      }
+    },
+    () => {
+      if (productRequests.get(id) === request) {
+        productRequests.delete(id);
+      }
+    },
+  );
   return request;
 }
 
@@ -227,6 +242,14 @@ function createCacheKey(options: ProductQueryOptions) {
     sortDirection: options.sortDirection ?? "asc",
     limit: options.limit,
   });
+}
+
+export function getProductCacheKey(id: string) {
+  if (id.trim() === "") {
+    throw new Error("A product ID is required.");
+  }
+
+  return `product:${id}`;
 }
 
 function validateOptions({ filters, limit }: ProductQueryOptions) {

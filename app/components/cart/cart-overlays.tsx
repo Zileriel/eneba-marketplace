@@ -1,7 +1,12 @@
 import { Check, ShoppingCart, X } from "lucide-react";
 import { Link } from "react-router";
 import { useEffect, useState } from "react";
-import { CartLineItem, getCartSummary, useCartProducts } from "./cart-lines";
+import {
+  CartLineItem,
+  CartLineSkeleton,
+  getCartSummary,
+  useCartProducts,
+} from "./cart-lines";
 import { formatEuro } from "../../utils/currency";
 import { useCart } from "../../lib/cart/cart-context";
 
@@ -89,9 +94,11 @@ function CartDrawer() {
   } = useCart();
   const { products, isLoading, error, retry } = useCartProducts(items);
   const { total, hasUnavailableProduct } = getCartSummary(items, products);
-  const [position, setPosition] = useState<{ top: number; right: number } | null>(
-    null,
-  );
+  const [position, setPosition] = useState<{
+    top: number;
+    right: number;
+    arrowRight: number;
+  } | null>(null);
 
   useEffect(() => {
     const button = cartButtonRef.current;
@@ -101,16 +108,25 @@ function CartDrawer() {
       const bounds = button.getBoundingClientRect();
       const viewportWidth = document.documentElement.clientWidth;
       const drawerWidth = Math.min(390, viewportWidth - 24);
+      const right = Math.max(
+        12,
+        Math.min(
+          viewportWidth - bounds.right,
+          viewportWidth - drawerWidth - 12,
+        ),
+      );
+      const drawerLeft = viewportWidth - right - drawerWidth;
       setPosition({
         top: Math.min(
           bounds.bottom + 8,
           Math.max(8, window.innerHeight - 180),
         ),
-        right: Math.max(
+        right,
+        arrowRight: Math.max(
           12,
           Math.min(
-            viewportWidth - bounds.right,
-            viewportWidth - drawerWidth - 12,
+            drawerWidth - 12,
+            drawerWidth - (bounds.left + bounds.width / 2 - drawerLeft),
           ),
         ),
       });
@@ -147,6 +163,11 @@ function CartDrawer() {
           visibility: position ? "visible" : "hidden",
         }}
       >
+        <span
+          aria-hidden="true"
+          className="cart-drawer__arrow"
+          style={{ right: position?.arrowRight }}
+        />
         <header className="cart-drawer__header">
           <h2 id="cart-drawer-title">Mano pirkinių krepšelis</h2>
           <button aria-label="Uždaryti" onClick={closeCart} type="button">
@@ -155,7 +176,14 @@ function CartDrawer() {
         </header>
         <div className="cart-drawer__items">
           {isLoading ? (
-            <p className="cart-message" role="status">Įkeliamas krepšelis...</p>
+            <div aria-label="Įkeliamas krepšelis" role="status">
+              {Array.from(
+                { length: Math.max(1, Math.min(items.length, 3)) },
+                (_, index) => (
+                  <CartLineSkeleton key={index} variant="drawer" />
+                ),
+              )}
+            </div>
           ) : error ? (
             <div className="cart-message" role="alert">
               <p>{error}</p>

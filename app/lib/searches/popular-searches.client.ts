@@ -1,7 +1,6 @@
 import {
   collection,
   getDocs,
-  getDocsFromCache,
   orderBy,
   query,
 } from "firebase/firestore";
@@ -12,18 +11,8 @@ export interface PopularSearch {
   searchTerm: string;
 }
 
-let popularSearchesCache: Promise<PopularSearch[]> | null = null;
-
 export function getPopularSearches() {
-  if (!popularSearchesCache) {
-    const request = loadPopularSearches();
-    popularSearchesCache = request;
-    request.catch(() => {
-      if (popularSearchesCache === request) popularSearchesCache = null;
-    });
-  }
-
-  return popularSearchesCache;
+  return loadPopularSearches();
 }
 
 async function loadPopularSearches(): Promise<PopularSearch[]> {
@@ -32,16 +21,7 @@ async function loadPopularSearches(): Promise<PopularSearch[]> {
     orderBy("rank"),
   );
 
-  let cachedSnapshot;
-  try {
-    cachedSnapshot = await getDocsFromCache(popularSearchesQuery);
-  } catch {
-    cachedSnapshot = null;
-  }
-  const snapshot =
-    cachedSnapshot && !cachedSnapshot.empty
-      ? cachedSnapshot
-      : await getDocs(popularSearchesQuery);
+  const snapshot = await getDocs(popularSearchesQuery);
 
   return snapshot.docs.map((document) => {
     const { searchTerm } = document.data();

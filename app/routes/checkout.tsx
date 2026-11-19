@@ -3,6 +3,7 @@ import { data, redirect } from "react-router";
 import type { Route } from "./+types/checkout";
 import {
   CartLineItem,
+  CartLineSkeleton,
   getCartSummary,
   useCartProducts,
 } from "../components/cart/cart-lines";
@@ -270,9 +271,14 @@ export default function CheckoutPage({
             </h2>
             <div className="checkout-page__product-list">
               {!isHydrated || isLoading ? (
-                <p className="cart-message" role="status">
-                  Įkeliamas krepšelis...
-                </p>
+                <div aria-label="Įkeliamas krepšelis" role="status">
+                  {Array.from(
+                    { length: Math.max(1, Math.min(items.length, 2)) },
+                    (_, index) => (
+                      <CartLineSkeleton key={index} variant="page" />
+                    ),
+                  )}
+                </div>
               ) : error ? (
                 <div className="cart-message" role="alert">
                   <p>{error}</p>

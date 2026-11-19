@@ -2,6 +2,7 @@ import {
   createUserWithEmailAndPassword,
   onAuthStateChanged,
   sendPasswordResetEmail,
+  signOut,
   signInWithEmailAndPassword,
   type User,
 } from "firebase/auth";
@@ -24,6 +25,10 @@ export function registerWithEmail(email: string, password: string) {
 
 export function sendPasswordReset(email: string) {
   return sendPasswordResetEmail(auth, email);
+}
+
+export function signOutCurrentUser() {
+  return signOut(auth);
 }
 
 export function getAuthErrorMessage(error: unknown) {

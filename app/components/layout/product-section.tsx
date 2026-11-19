@@ -1,13 +1,15 @@
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Info } from "lucide-react";
-import { ProductCard } from "./product-card";
+import { ProductCard, ProductCardSkeleton } from "./product-card";
 import type { ProductCatalogItem } from "../../lib/products/products";
+import { useStaleWhileRevalidate } from "../../lib/cache/swr";
 
 const PRODUCTS_PER_SLIDE = 5;
 const MOBILE_PRODUCT_LIMIT = 10;
 
 type ProductSectionProps = {
   title: string;
+  cacheKey: string;
   loadProducts: () => Promise<ProductCatalogItem[]>;
   loadingMessage?: string;
   errorMessage?: string;
@@ -16,14 +18,18 @@ type ProductSectionProps = {
 
 export function ProductSection({
   title,
+  cacheKey,
   loadProducts: fetchProducts,
   loadingMessage = "Įkeliami produktai...",
   errorMessage = "Nepavyko įkelti produktų.",
   variant,
 }: ProductSectionProps) {
-  const [products, setProducts] = useState<ProductCatalogItem[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: products,
+    isLoading,
+    error,
+    retry: retryLoadingProducts,
+  } = useStaleWhileRevalidate(cacheKey, fetchProducts);
   const [isMobile, setIsMobile] = useState(false);
   const [slideOffsets, setSlideOffsets] = useState<number[]>([0]);
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -32,21 +38,11 @@ export function ProductSection({
   const trackRef = useRef<HTMLDivElement>(null);
   const scrollTimeoutRef = useRef<number | null>(null);
 
-  const retryLoadingProducts = useCallback(() => {
-    setIsLoading(true);
-    setError(null);
-    void fetchProducts()
-      .then(setProducts)
-      .catch((cause: unknown) => {
-        console.error(`Failed to load products for "${title}".`, cause);
-        setError(errorMessage);
-      })
-      .finally(() => setIsLoading(false));
-  }, [errorMessage, fetchProducts, title]);
-
   useEffect(() => {
-    retryLoadingProducts();
-  }, [retryLoadingProducts]);
+    if (error) {
+      console.error(`Failed to load products for "${title}".`, error);
+    }
+  }, [error, title]);
 
   useEffect(() => {
     const mobileQuery = window.matchMedia("(max-width: 740px)");
@@ -73,7 +69,7 @@ export function ProductSection({
   const visibleProducts =
     products && isMobile ? products.slice(0, MOBILE_PRODUCT_LIMIT) : products;
   const isCarousel =
-    !isMobile && visibleProducts !== null && visibleProducts.length > 5;
+    !isMobile && visibleProducts !== undefined && visibleProducts.length > 5;
 
   const getSlideOffsets = useCallback((itemCount: number) => {
     const viewport = viewportRef.current;
@@ -188,17 +184,23 @@ export function ProductSection({
           <Info aria-hidden="true" />
         </h2>
         {isLoading ? (
-          <p className="product-section__message" role="status">
-            {loadingMessage}
-          </p>
-        ) : error ? (
+          <div
+            aria-label={loadingMessage}
+            className="product-section__skeleton-grid"
+            role="status"
+          >
+            {Array.from({ length: 5 }, (_, index) => (
+              <ProductCardSkeleton key={index} />
+            ))}
+          </div>
+        ) : error && visibleProducts === undefined ? (
           <div className="product-section__message" role="alert">
-            <span>{error}</span>
+            <span>{errorMessage}</span>
             <button onClick={retryLoadingProducts} type="button">
               Bandykite dar kartą
             </button>
           </div>
-        ) : visibleProducts ? (
+        ) : visibleProducts !== undefined ? (
           isCarousel ? (
             <>
               <div

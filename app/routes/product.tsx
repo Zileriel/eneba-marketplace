@@ -1,18 +1,40 @@
 import { CirclePlus, ShoppingCart } from "lucide-react";
-import { Link, useNavigate } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import type { Route } from "./+types/product";
 import { Header } from "../components/layout/header";
 import { formatEuro } from "../utils/currency";
 import { useCart } from "../lib/cart/cart-context";
-import { getProductById } from "../lib/products/product-repository.client";
+import {
+  getProductById,
+  getProductCacheKey,
+} from "../lib/products/product-repository.client";
 import type { ProductCatalogItem } from "../lib/products/products";
+import {
+  getCachedValue,
+  revalidateCachedValue,
+  useCachedValue,
+} from "../lib/cache/swr";
 
 export function meta({}: Route.MetaArgs) {
   return [{ title: "Produktas | Eneba" }];
 }
 
 export async function clientLoader({ params }: Route.ClientLoaderArgs) {
-  return getProductById(params.productId);
+  const cacheKey = getProductCacheKey(params.productId);
+  const cachedProduct = getCachedValue<ProductCatalogItem | null>(cacheKey);
+
+  if (cachedProduct !== undefined) {
+    void revalidateCachedValue(cacheKey, () =>
+      getProductById(params.productId),
+    ).catch((cause: unknown) => {
+      console.error(`Failed to refresh product "${params.productId}".`, cause);
+    });
+    return cachedProduct;
+  }
+
+  return revalidateCachedValue(cacheKey, () =>
+    getProductById(params.productId),
+  );
 }
 
 clientLoader.hydrate = true as const;
@@ -33,7 +55,9 @@ export function HydrateFallback() {
 export default function ProductDetail({
   loaderData,
 }: Route.ComponentProps) {
-  const product = loaderData;
+  const productId = useParams<"productId">().productId ?? "";
+  const cacheKey = productId ? getProductCacheKey(productId) : "product:missing";
+  const product = useCachedValue(cacheKey, loaderData);
 
   return (
     <>

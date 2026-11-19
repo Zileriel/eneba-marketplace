@@ -3,28 +3,39 @@ import { Header } from "../components/layout/header";
 import { HomeBannerRow } from "../components/layout/home-banner-row";
 import { ProductSection } from "~/components/layout/product-section";
 import { getProducts } from "~/lib/products/product-repository.client";
+import type { ProductQueryOptions } from "~/lib/products/product-repository.client";
+
+const RECOMMENDED_CACHE_KEY = "products:home:recommended:v1";
+const POPULAR_CACHE_KEY = "products:home:popular:v1";
+const GIFT_CARDS_CACHE_KEY = "products:home:gift-cards:v1";
+
+const recommendedProductQuery = {
+  filters: { isRecommended: true },
+  sortBy: "recommendedOrder",
+  limit: 5,
+} satisfies ProductQueryOptions;
+
+const popularProductQuery = {
+  filters: { isPopular: true },
+  sortBy: "popularOrder",
+  limit: 15,
+} satisfies ProductQueryOptions;
+
+const giftCardProductQuery = {
+  filters: { productTypes: ["E. Kortelės"] },
+  sortBy: "name",
+} satisfies ProductQueryOptions;
 
 function loadRecommendedProducts() {
-  return getProducts({
-    filters: { isRecommended: true },
-    sortBy: "recommendedOrder",
-    limit: 5,
-  });
+  return getProducts(recommendedProductQuery);
 }
 
 function loadPopularProducts() {
-  return getProducts({
-    filters: { isPopular: true },
-    sortBy: "popularOrder",
-    limit: 15,
-  });
+  return getProducts(popularProductQuery);
 }
 
 function loadPopularGiftCards() {
-  return getProducts({
-    filters: { productTypes: ["E. Kortelės"] },
-    sortBy: "name",
-  });
+  return getProducts(giftCardProductQuery);
 }
 
 export function meta({}: Route.MetaArgs) {
@@ -42,6 +53,7 @@ export default function Home() {
         <HomeBannerRow />
         <ProductSection
           title="Rekomenduojama tau"
+          cacheKey={RECOMMENDED_CACHE_KEY}
           errorMessage="Nepavyko įkelti rekomenduojamų produktų."
           loadProducts={loadRecommendedProducts}
           loadingMessage="Įkeliami rekomenduojami produktai..."
@@ -49,6 +61,7 @@ export default function Home() {
         />
         <ProductSection
           title="Populiariausi žaidimai"
+          cacheKey={POPULAR_CACHE_KEY}
           errorMessage="Nepavyko įkelti populiariausių žaidimų."
           loadProducts={loadPopularProducts}
           loadingMessage="Įkeliami populiariausi žaidimai..."
@@ -56,6 +69,7 @@ export default function Home() {
         />
         <ProductSection
           title="Populiariausios el. dovanų kortelės"
+          cacheKey={GIFT_CARDS_CACHE_KEY}
           errorMessage="Nepavyko įkelti populiariausių dovanų kortelių."
           loadProducts={loadPopularGiftCards}
           loadingMessage="Įkeliamos populiariausios dovanų kortelės..."

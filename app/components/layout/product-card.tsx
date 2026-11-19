@@ -79,3 +79,17 @@ export function ProductCard({
     </article>
   );
 }
+
+export function ProductCardSkeleton() {
+  return (
+    <article aria-hidden="true" className="product-card-skeleton">
+      <div className="product-card-skeleton__cover" />
+      <div className="product-card-skeleton__body">
+        <span className="product-card-skeleton__line product-card-skeleton__line--title" />
+        <span className="product-card-skeleton__line product-card-skeleton__line--region" />
+        <span className="product-card-skeleton__line product-card-skeleton__line--price" />
+        <span className="product-card-skeleton__line product-card-skeleton__line--cashback" />
+      </div>
+    </article>
+  );
+}
