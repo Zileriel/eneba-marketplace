@@ -1,0 +1,96 @@
+import { useState, type FormEvent } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router";
+import { AuthShell } from "../components/layout/auth-shell";
+import { PasswordField } from "../components/input/password-field";
+import { getAuthErrorMessage, signInWithEmail } from "../lib/auth/auth.client";
+import { authPageUrl, getSafeRedirectTo } from "../lib/auth/redirect";
+import type { Route } from "./+types/login";
+
+export function meta({}: Route.MetaArgs) {
+  return [{ title: "Prisijungti | Eneba" }];
+}
+
+export default function Login() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectTo = getSafeRedirectTo(searchParams.get("redirectTo"));
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      await signInWithEmail(email.trim(), password);
+      await navigate(redirectTo);
+    } catch (cause) {
+      setError(getAuthErrorMessage(cause));
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  return (
+    <AuthShell>
+      <section aria-labelledby="auth-title" className="auth-card">
+        <h2 id="auth-title">Prisijungti</h2>
+        <p className="auth-card__subtitle">
+          Naujas vartotojas?{" "}
+          <Link
+            className="auth-link"
+            to={authPageUrl("/register", redirectTo)}
+          >
+            Susikurk paskyrą
+          </Link>
+        </p>
+        <form
+          aria-busy={isSubmitting}
+          className="auth-form"
+          onSubmit={handleSubmit}
+        >
+          <input
+            autoComplete="username"
+            disabled={isSubmitting}
+            id="username"
+            name="username"
+            onChange={(event) => setEmail(event.currentTarget.value)}
+            placeholder="El. paštas"
+            required
+            type="email"
+            value={email}
+          />
+          <PasswordField
+            autoComplete="current-password"
+            disabled={isSubmitting}
+            onChange={setPassword}
+            value={password}
+          />
+          {error && (
+            <p className="auth-form__error" role="alert">
+              {error}
+            </p>
+          )}
+          <button
+            className="auth-form__submit"
+            disabled={isSubmitting}
+            type="submit"
+          >
+            {isSubmitting ? "Jungiama..." : "Prisijungti"}
+          </button>
+        </form>
+        <p className="auth-card__footer">
+          <Link
+            className="auth-link"
+            to={authPageUrl("/lost-password", redirectTo)}
+          >
+            Pamiršote slaptažodį?
+          </Link>
+        </p>
+      </section>
+    </AuthShell>
+  );
+}

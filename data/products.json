@@ -1,0 +1,689 @@
+[
+  {
+    "id": "google-play-gift-card-15-eur",
+    "coverImage": "/images/products/0.jpeg",
+    "name": "Google Play Dovanų Kortelė 15 EUR (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 15,
+    "currency": "EUR",
+    "moneyBackPercent": 4,
+    "platform": "Google Play",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": true,
+    "recommendedOrder": 1
+  },
+  {
+    "id": "tinder-gold-1-month",
+    "coverImage": "/images/products/1.jpeg",
+    "name": "Tinder Gold 1 mėnesio prenumerata",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 14.99,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Tinder",
+    "productType": "Prenumerata",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "bitnovo-voucher-25-eur",
+    "coverImage": "/images/products/2.jpeg",
+    "name": "Bitnovo Skaitmeninis Kuponas 25 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 2,
+    "platform": "Bitnovo",
+    "productType": "E-money kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Ispanija",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "uber-eats-gift-card-25-eur",
+    "coverImage": "/images/products/3.jpeg",
+    "name": "Uber Eats Dovanų Kortelė 25 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Uber Eats",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "zalando-gift-card-50-eur",
+    "coverImage": "/images/products/4.jpeg",
+    "name": "Zalando Dovanų Kortelė 50 EUR (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 50,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Zalando",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Vokietija",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "binance-gift-card-25-eur",
+    "coverImage": "/images/products/5.jpeg",
+    "name": "Binance Dovanų Kortelė 25 EUR",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 2,
+    "platform": "Binance",
+    "productType": "E-money kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "spotify-premium-3-months",
+    "coverImage": "/images/products/6.jpeg",
+    "name": "Spotify Premium 3 mėnesių prenumerata",
+    "regions": [
+      "Europa"
+    ],
+    "price": 32.97,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Spotify",
+    "productType": "Prenumerata",
+    "operatingSystems": [
+      "Android",
+      "iOS",
+      "Windows",
+      "Mac"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": true,
+    "recommendedOrder": 2
+  },
+  {
+    "id": "uber-gift-card-25-eur",
+    "coverImage": "/images/products/7.jpeg",
+    "name": "Uber Dovanų Kortelė 25 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Uber",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "amazon-gift-card-50-eur",
+    "coverImage": "/images/products/8.jpeg",
+    "name": "Amazon Dovanų Kortelė 50 EUR (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 50,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Amazon",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS",
+      "Windows",
+      "Mac"
+    ],
+    "genres": [],
+    "country": "Vokietija",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "razer-gold-20-eur",
+    "coverImage": "/images/products/9.jpeg",
+    "name": "Razer Gold Dovanų Kortelė 20 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 20,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Razer",
+    "productType": "E-money kortelės",
+    "operatingSystems": [
+      "Windows",
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": true,
+    "recommendedOrder": 3
+  },
+  {
+    "id": "discord-nitro-1-month",
+    "coverImage": "/images/products/10.jpeg",
+    "name": "Discord Nitro 1 mėnesio prenumerata",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 9.99,
+    "currency": "EUR",
+    "moneyBackPercent": 4,
+    "platform": "Discord",
+    "productType": "Prenumerata",
+    "operatingSystems": [
+      "Windows",
+      "Mac",
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "apple-gift-card-25-eur",
+    "coverImage": "/images/products/11.jpeg",
+    "name": "Apple Dovanų Kortelė 25 EUR (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 4,
+    "platform": "Apple App Store",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "iOS",
+      "Mac"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "ikea-gift-card-50-eur",
+    "coverImage": "/images/products/12.jpeg",
+    "name": "IKEA Dovanų Kortelė 50 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 50,
+    "currency": "EUR",
+    "moneyBackPercent": 2,
+    "platform": "IKEA",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "gta-vi-standard-edition-ps5-europe",
+    "coverImage": "/images/products/13.jpeg",
+    "name": "Grand Theft Auto VI (PS5) PlayStation Network Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 79.99,
+    "currency": "EUR",
+    "moneyBackPercent": 8,
+    "platform": "PlayStation Network",
+    "productType": "Žaidimai",
+    "operatingSystems": [],
+    "genres": [
+      "Veiksmo",
+      "Nuotykių"
+    ],
+    "country": "Jungtinė Karalystė",
+    "isPopular": true,
+    "popularOrder": 1,
+    "isRecommended": true,
+    "recommendedOrder": 4
+  },
+  {
+    "id": "netflix-gift-card-25-eur",
+    "coverImage": "/images/products/14.jpeg",
+    "name": "Netflix Dovanų Kortelė 25 EUR",
+    "regions": [
+      "Europa"
+    ],
+    "price": 25,
+    "currency": "EUR",
+    "moneyBackPercent": 3,
+    "platform": "Netflix",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Windows",
+      "Mac",
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Lietuva",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "airbnb-gift-card-100-eur",
+    "coverImage": "/images/products/15.jpeg",
+    "name": "Airbnb Dovanų Kortelė 100 EUR",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 100,
+    "currency": "EUR",
+    "moneyBackPercent": 2,
+    "platform": "Airbnb",
+    "productType": "E. Kortelės",
+    "operatingSystems": [
+      "Android",
+      "iOS"
+    ],
+    "genres": [],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": false,
+    "isRecommended": false
+  },
+  {
+    "id": "free-fire-1000-diamonds",
+    "coverImage": "/images/products/16.jpeg",
+    "name": "Garena Free Fire 1 000 Diamonds Top-Up (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 9.99,
+    "currency": "EUR",
+    "moneyBackPercent": 6,
+    "platform": "Google Play",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [
+      "Veiksmo",
+      "Šaudyklės"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 2,
+    "isRecommended": false
+  },
+  {
+    "id": "free-fire-2200-diamonds",
+    "coverImage": "/images/products/17.jpeg",
+    "name": "Garena Free Fire 2 200 Diamonds Top-Up (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 19.99,
+    "currency": "EUR",
+    "moneyBackPercent": 6,
+    "platform": "Google Play",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [
+      "Veiksmo",
+      "Šaudyklės"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 3,
+    "isRecommended": false
+  },
+  {
+    "id": "football-manager-27-steam",
+    "coverImage": "/images/products/18.jpeg",
+    "name": "Football Manager 27 PC Steam Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 59.99,
+    "currency": "EUR",
+    "moneyBackPercent": 7,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows",
+      "Mac"
+    ],
+    "genres": [
+      "Sportas",
+      "Simuliatoriai",
+      "Strategija"
+    ],
+    "country": "Jungtinė Karalystė",
+    "isPopular": true,
+    "popularOrder": 4,
+    "isRecommended": false
+  },
+  {
+    "id": "random-steam-key-playstation-pc-edition",
+    "coverImage": "/images/products/19.jpeg",
+    "name": "Random Steam Key - PlayStation PC Edition (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 6.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 5,
+    "isRecommended": false
+  },
+  {
+    "id": "pubg-mobile-600-uc",
+    "coverImage": "/images/products/20.jpeg",
+    "name": "PUBG Mobile 600 UC Top-Up (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 9.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Google Play",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [
+      "Veiksmo",
+      "Šaudyklės"
+    ],
+    "country": "Japonija",
+    "isPopular": true,
+    "popularOrder": 6,
+    "isRecommended": false
+  },
+  {
+    "id": "genshin-impact-980-genesis-crystals",
+    "coverImage": "/images/products/21.jpeg",
+    "name": "Genshin Impact 980 Genesis Crystals Top-Up (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 14.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Google Play",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [
+      "Vaidmenų žaidimai",
+      "Nuotykių"
+    ],
+    "country": "Japonija",
+    "isPopular": true,
+    "popularOrder": 7,
+    "isRecommended": false
+  },
+  {
+    "id": "marvel-rivals-500-lattice-steam",
+    "coverImage": "/images/products/22.jpeg",
+    "name": "Marvel Rivals 500 Lattice Top-Up (Steam)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 4.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Steam",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [
+      "Veiksmo",
+      "Šaudyklės"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 8,
+    "isRecommended": false
+  },
+  {
+    "id": "minecraft-java-bedrock-pc",
+    "coverImage": "/images/products/23.jpeg",
+    "name": "Minecraft Java & Bedrock Edition PC Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 29.99,
+    "currency": "EUR",
+    "moneyBackPercent": 7,
+    "platform": "Microsoft Store",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [
+      "Nuotykių",
+      "Veiksmo"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 9,
+    "isRecommended": true,
+    "recommendedOrder": 5
+  },
+  {
+    "id": "mobile-legends-275-diamonds",
+    "coverImage": "/images/products/24.jpeg",
+    "name": "Mobile Legends: Bang Bang 275 Diamonds Top-Up (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 4.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Google Play",
+    "productType": "Žaidimo taškai",
+    "operatingSystems": [
+      "Android"
+    ],
+    "genres": [
+      "Veiksmo",
+      "Strategija"
+    ],
+    "country": "Japonija",
+    "isPopular": true,
+    "popularOrder": 10,
+    "isRecommended": false
+  },
+  {
+    "id": "gta-vi-ultimate-edition-xbox-series-europe",
+    "coverImage": "/images/products/25.jpeg",
+    "name": "Grand Theft Auto VI Ultimate Edition Xbox Series X|S Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 109.99,
+    "currency": "EUR",
+    "moneyBackPercent": 8,
+    "platform": "Xbox Live",
+    "productType": "Žaidimai",
+    "operatingSystems": [],
+    "genres": [
+      "Veiksmo",
+      "Nuotykių"
+    ],
+    "country": "Jungtinė Karalystė",
+    "isPopular": true,
+    "popularOrder": 11,
+    "isRecommended": false
+  },
+  {
+    "id": "terraria-steam",
+    "coverImage": "/images/products/26.jpeg",
+    "name": "Terraria PC Steam Key (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 9.99,
+    "currency": "EUR",
+    "moneyBackPercent": 6,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows",
+      "Mac",
+      "Linux"
+    ],
+    "genres": [
+      "Nuotykių",
+      "Veiksmo",
+      "Indie"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 12,
+    "isRecommended": false
+  },
+  {
+    "id": "elden-ring-steam",
+    "coverImage": "/images/products/27.jpeg",
+    "name": "Elden Ring PC Steam Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 59.99,
+    "currency": "EUR",
+    "moneyBackPercent": 7,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [
+      "Vaidmenų žaidimai",
+      "Veiksmo",
+      "Nuotykių"
+    ],
+    "country": "Japonija",
+    "isPopular": true,
+    "popularOrder": 13,
+    "isRecommended": false
+  },
+  {
+    "id": "peak-steam",
+    "coverImage": "/images/products/28.jpeg",
+    "name": "PEAK PC Steam Key (Global)",
+    "regions": [
+      "Visas Pasaulis"
+    ],
+    "price": 7.99,
+    "currency": "EUR",
+    "moneyBackPercent": 5,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [
+      "Nuotykių",
+      "Indie"
+    ],
+    "country": "Jungtinės Amerikos Valstijos",
+    "isPopular": true,
+    "popularOrder": 14,
+    "isRecommended": false
+  },
+  {
+    "id": "assetto-corsa-steam",
+    "coverImage": "/images/products/29.jpeg",
+    "name": "Assetto Corsa Ultimate Edition PC Steam Key (Europa)",
+    "regions": [
+      "Europa"
+    ],
+    "price": 19.99,
+    "currency": "EUR",
+    "moneyBackPercent": 6,
+    "platform": "Steam",
+    "productType": "Žaidimai",
+    "operatingSystems": [
+      "Windows"
+    ],
+    "genres": [
+      "Lenktynės",
+      "Simuliatoriai"
+    ],
+    "country": "Vokietija",
+    "isPopular": true,
+    "popularOrder": 15,
+    "isRecommended": false
+  }
+]

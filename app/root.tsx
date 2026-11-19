@@ -8,6 +8,9 @@ import {
 } from "react-router";
 
 import type { Route } from "./+types/root";
+import { CartOverlays } from "./components/cart/cart-overlays";
+import { Footer } from "./components/layout/footer";
+import { CartProvider } from "./lib/cart/cart-context";
 import "./app.css";
 
 export const links: Route.LinksFunction = () => [
@@ -25,7 +28,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="lt">
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -42,7 +45,17 @@ export function Layout({ children }: { children: React.ReactNode }) {
 }
 
 export default function App() {
-  return <Outlet />;
+  return (
+    <CartProvider>
+      <div className="app-shell">
+        <div className="app-shell__content">
+          <Outlet />
+        </div>
+        <Footer />
+      </div>
+      <CartOverlays />
+    </CartProvider>
+  );
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
