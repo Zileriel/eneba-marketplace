@@ -20,7 +20,7 @@ import {
   ProductKeyInventoryError,
   verifyFirebaseIdToken,
 } from "../lib/firebase/firebase-admin.server";
-import { isCheckoutSessionId } from "../lib/checkout/stripe.server";
+import { isCheckoutSessionId } from "../lib/checkout/stripe-utils";
 import { authPageUrl } from "../lib/auth/redirect";
 import { useAuthUser } from "../lib/auth/use-auth-user";
 import { useCart } from "../lib/cart/cart-context";

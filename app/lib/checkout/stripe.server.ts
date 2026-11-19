@@ -1,9 +1,8 @@
 import Stripe from "stripe";
+import { isCheckoutSessionId } from "./stripe-utils";
 
 export class StripeConfigurationError extends Error {}
 export class CheckoutSessionError extends Error {}
-
-const CHECKOUT_SESSION_ID_PATTERN = /^cs_test_[a-zA-Z0-9]+$/;
 
 let stripeClient: Stripe | undefined;
 
@@ -41,10 +40,6 @@ export function getStripeClient() {
 
   stripeClient = new Stripe(secretKey);
   return stripeClient;
-}
-
-export function isCheckoutSessionId(value: unknown): value is string {
-  return typeof value === "string" && CHECKOUT_SESSION_ID_PATTERN.test(value);
 }
 
 export async function getCheckoutSessionDetails(
